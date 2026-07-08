@@ -1,0 +1,24 @@
+file,size_bytes,source,description
+inputs/suppl/DE_stats.csv,5341369,github.com/emdann/GWT_perturbseq_analysis_2025 (MIT),"Per-perturbation DE summary stats (up/down counts, effect size, robustness)"
+inputs/suppl/cluster_annotations.csv,121625,github.com/emdann/GWT_perturbseq_analysis_2025 (MIT),"111 regulator clusters: annotation, CORUM/STRING/KEGG/Reactome enrichment, condition_specificity"
+inputs/suppl/cluster_specificity.csv,22295,github.com/emdann/GWT_perturbseq_analysis_2025 (MIT),Per-cluster condition-specificity scores
+inputs/suppl/cluster_autoimmune_enrichment.csv,975501,github.com/emdann/GWT_perturbseq_analysis_2025 (MIT),"Cluster-level autoimmune GWAS enrichment (Open Targets, 14 diseases)"
+inputs/suppl/guide_kd_efficiency.csv,13319852,github.com/emdann/GWT_perturbseq_analysis_2025 (MIT),Guide-level knockdown efficiency
+inputs/suppl/downstream_genes.csv,64053611,github.com/emdann/GWT_perturbseq_analysis_2025 (MIT),Cluster-aggregated downstream genes with sign coherence + zscore ranks
+inputs/results/autoimmune_genes_opentargets.csv,88880,github.com/emdann/GWT_perturbseq_analysis_2025 (MIT),Autoimmune disease gene associations from Open Targets used in paper
+inputs/results/clustering_condition_specificity.csv,22087,github.com/emdann/GWT_perturbseq_analysis_2025 (MIT),Condition specificity of clusters (results)
+inputs/results/core_genes_enrich.csv,341256,github.com/emdann/GWT_perturbseq_analysis_2025 (MIT),Lymphocyte-count core-gene enrichment (UKB LoF)
+inputs/de_obs.parquet,831625,"s3://genome-scale-tcell-perturb-seq/marson2025_data/ (CZI Virtual Cells, public)",Perturbation metadata (row index) from GWCD4i.DE_stats.h5ad obs
+inputs/de_var.parquet,217145,"s3://genome-scale-tcell-perturb-seq/marson2025_data/ (CZI Virtual Cells, public)","Gene index (10,282 genes) from GWCD4i.DE_stats.h5ad var"
+inputs/genelists/clinvar_path_likelypath.tsv,18487,github.com/emdann/GWT_perturbseq_analysis_2025 (MIT),Druggable/annotation gene list: clinvar_path_likelypath.tsv
+inputs/genelists/ion_channels.tsv,2041,github.com/emdann/GWT_perturbseq_analysis_2025 (MIT),Druggable/annotation gene list: ion_channels.tsv
+inputs/genelists/cytokines.tsv,1962,github.com/emdann/GWT_perturbseq_analysis_2025 (MIT),Druggable/annotation gene list: cytokines.tsv
+inputs/genelists/gwascatalog.tsv,39941,github.com/emdann/GWT_perturbseq_analysis_2025 (MIT),Druggable/annotation gene list: gwascatalog.tsv
+inputs/genelists/enzymes.tsv,5566,github.com/emdann/GWT_perturbseq_analysis_2025 (MIT),Druggable/annotation gene list: enzymes.tsv
+inputs/genelists/catalytic_receptors.tsv,1646,github.com/emdann/GWT_perturbseq_analysis_2025 (MIT),Druggable/annotation gene list: catalytic_receptors.tsv
+inputs/genelists/gpcr_union.tsv,4823,github.com/emdann/GWT_perturbseq_analysis_2025 (MIT),Druggable/annotation gene list: gpcr_union.tsv
+inputs/genelists/cytokine_receptors.tsv,768,github.com/emdann/GWT_perturbseq_analysis_2025 (MIT),Druggable/annotation gene list: cytokine_receptors.tsv
+inputs/genelists/nuclear_receptors.tsv,263,github.com/emdann/GWT_perturbseq_analysis_2025 (MIT),Druggable/annotation gene list: nuclear_receptors.tsv
+inputs/genelists/kinases.tsv,1899,github.com/emdann/GWT_perturbseq_analysis_2025 (MIT),Druggable/annotation gene list: kinases.tsv
+inputs/genelists/transporters.tsv,4133,github.com/emdann/GWT_perturbseq_analysis_2025 (MIT),Druggable/annotation gene list: transporters.tsv
+inputs/genelists/human_TFs.csv,96922,github.com/emdann/GWT_perturbseq_analysis_2025 (MIT),Druggable/annotation gene list: human_TFs.csv

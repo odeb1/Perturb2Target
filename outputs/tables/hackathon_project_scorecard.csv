@@ -1,0 +1,22 @@
+Rank,Project,Track,Innovation,Technical,SciRelevance,Impact,Presentation,Feasibility,CriteriaMean,WinScore
+1,Toxicity Report,Safety,3,3,5,4,4,5,3.8,3.8
+2,hERG De-Risking,Safety,4,4,5,5,5,4,4.6,3.68
+3,Disease Model Planner,Pre-clinical,4,3,4,4,4,4,3.8,3.04
+4,Curve Copilot,Exp Data,2,3,3,3,4,5,3.0,3.0
+5,Clinical Trial Attrition,Target ID,4,4,5,5,4,3,4.4,2.64
+6,Protein/Antibody Finder,Pre-clinical,3,3,3,3,3,4,3.0,2.4
+7,IC50->Ki/Kd Transform,Exp Data,3,3,4,3,2,4,3.0,2.4
+8,Automated FTO Search,IP,4,4,3,4,4,3,3.8,2.28
+9,Exp Data Visualisation,Exp Data,2,3,3,3,3,4,2.8,2.24
+10,Assay Optimisation Tool,Pre-clinical,4,3,4,4,3,3,3.6,2.16
+11,Undruggable Classifier,Target ID,4,3,4,3,3,3,3.4,2.04
+12,Selectivity Visualisation,Structure,3,3,3,3,4,3,3.2,1.92
+13,Multi-Objective Gen Design,Ligand,5,5,4,4,3,2,4.2,1.68
+14,Few-Shot Bioactivity,Ligand,5,4,4,4,3,2,4.0,1.6
+15,Assess Training Set,Structure,3,3,3,2,2,3,2.6,1.56
+16,Target Deconvolution (co-fold),Structure,4,4,4,3,3,2,3.6,1.44
+17,Activity Cliffs,Ligand,4,4,4,3,3,2,3.6,1.44
+18,Key Compound in Patent,IP,4,3,3,4,3,2,3.4,1.36
+19,Markush Infringement,IP,4,4,3,3,3,2,3.4,1.36
+20,Claims Drafting,IP,3,3,3,3,3,2,3.0,1.2
+21,Cross-Species Translational,Pre-clinical,5,4,5,5,3,1,4.4,0.88

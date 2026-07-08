@@ -1,0 +1,64 @@
+{
+  "version": 3,
+  "created_at": "2026-07-07T12:34:17.150Z",
+  "task_summary": "Context-specific, druggability-filtered drug-target nomination from CD4+ T cell Perturb-seq",
+  "agents": [],
+  "phases": [
+    {
+      "name": "Plan",
+      "delegations": [
+        {
+          "steps": [
+            {
+              "title": "Acquire and validate inputs",
+              "description": "Download the MIT-licensed analysis tables from github.com/emdann/GWT_perturbseq_analysis_2025: gene-level DE estimates (DE_stats.suppl_table.csv), cluster annotations (clustering_results_and_annotations.csv), condition-specificity scores (nde75ntotal50_cluster_specificity.csv), autoimmune-enrichment results, guide KD efficiency, and the bundled druggable-class gene lists (kinases/GPCRs/ion-channels/enzymes/transporters/nuclear-receptors) plus ClinVar/GWAS lists. Load each, print shapes/columns, confirm perturbation identifiers and the three stimulation conditions (Rest/Stim8hr/Stim48hr). Save a manifest.csv documenting every input, its source URL, and row/column counts. Checkpoint the merged long-format DE table as de_long.parquet."
+            },
+            {
+              "title": "Define a pathogenic pro-inflammatory target program",
+              "description": "Assemble a defensible 'disease-relevant state' signature to score perturbations against — a pro-inflammatory / Th1-Th17 effector program (e.g. IFNG, IL17A/F, TNF, CXCL8, TBX21, RORC, STAT3-network effectors) drawn from the paper's own cytokine/polarization gene sets and standard immunology references. Document gene membership and provenance in a signature table. Render a heatmap of signature-gene DE across the top perturbations per condition as the first QC figure (program_signature_heatmap.png)."
+            },
+            {
+              "title": "Score directional, context-specific perturbation effects",
+              "description": "For each perturbed regulator in each condition, compute a signed program-shift score (how far knockdown moves cells toward vs. away from the pathogenic program) using the gene-level DE estimates, plus a context-specificity index contrasting stimulated (Stim8hr/Stim48hr) vs Rest. Flag regulators whose effect is stimulation-conditional (acts only in activated, disease-relevant cells). Require cross-donor/cross-guide robustness using the guide-KD and robustness fields. Output perturbation_scores.csv and a volcano/quadrant figure (perturbation_directionality.png) with knockdown-attenuates-inflammation vs knockdown-amplifies quadrants labelled."
+            },
+            {
+              "title": "Add human-genetics support",
+              "description": "Anchor candidates to human disease genetics WITHOUT re-deriving the paper's cluster-enrichment: for each candidate regulator query Open Targets (via the clinical-genomics connector / GraphQL) for association scores across the 14 autoimmune diseases, and cross-reference the bundled GWAS-catalog and ClinVar pathogenic lists. Add columns for max autoimmune association score, top disease, and genetic-evidence class. Save genetics_annotation.csv and a figure ranking candidates by combined causal-effect × genetic-evidence (genetics_support.png)."
+            },
+            {
+              "title": "Add druggability and tractability",
+              "description": "Classify every candidate by protein family using the repo's druggable-class lists, then query ChEMBL (bioactivity connector) and Open Targets tractability buckets for small-molecule / antibody tractability, known ligands, and clinical-phase compounds. Produce a druggability_annotation.csv with tractability tier and best-known modality per candidate, and a dot plot (druggability_landscape.png) of candidates positioned by causal effect size vs tractability tier."
+            },
+            {
+              "title": "Assess clinical novelty",
+              "description": "Query ClinicalTrials.gov and ChEMBL mechanism/indication data to label each candidate as (a) approved/clinical-stage target for an immune indication, (b) drugged for a non-immune indication (repurposing angle), or (c) novel/undrugged. This is the differentiation axis — it separates rediscoveries from genuinely new nominations. Save clinical_novelty.csv and a summary bar/stacked figure (novelty_breakdown.png)."
+            },
+            {
+              "title": "Integrate into a ranked target shortlist",
+              "description": "Join all evidence layers into one table and compute a transparent composite nomination score with four explicit, separately-visible components (directional causal effect, context-specificity, genetic evidence, druggability), keeping clinical-novelty as an annotation not a score inflator. Produce target_shortlist.csv (all candidates, all evidence columns, ranked) and a headline figure (top_targets_evidence_matrix.png) — a heatmap/table of the top ~20 nominations with each evidence layer as a column. Sanity-check that known positives (e.g. STAT3-network, CTLA4) surface where expected."
+            },
+            {
+              "title": "Deep-dive the top novel nominations",
+              "description": "For the 3–5 highest-ranked NOVEL (undrugged or non-immune-drugged) candidates, write a short mechanistic vignette each: causal signature, condition-specificity, downstream program, genetic evidence, tractability, and a one-line therapeutic hypothesis (agonize vs antagonize, and in which disease). Ground each claim in the retrieved data/literature. Render per-target mini-panels (top_target_vignettes.png)."
+            },
+            {
+              "title": "Assemble reproducible pipeline and report",
+              "description": "Consolidate the analysis into a clean, rerunnable notebook (target_nomination_pipeline.ipynb) and write findings_report.md (methods, what differs from the preprint, the shortlist, the novel vignettes, and explicit limitations — chiefly that nominations are computational hypotheses requiring wet-lab validation). Save all artifacts, embed key figures, and provide the shortlist CSV as the primary deliverable."
+            }
+          ]
+        }
+      ],
+      "id": "phase-0"
+    }
+  ],
+  "desired_outputs": [
+    "Ranked, evidence-annotated drug-target shortlist (CSV)",
+    "Target-nomination figure set (scatter/dot plots, directionality maps)",
+    "Reproducible pipeline notebook",
+    "Short methods+findings report (MD/PDF)"
+  ],
+  "feasibility": {
+    "rationale": "All required inputs are small MIT-licensed CSVs (gene-level DE estimates 5.3 MB, cluster annotations, condition-specificity, autoimmune enrichment) downloadable from the analysis repo, so the full pipeline runs locally without the 22 M-cell matrix or a cluster. The three added layers (directionality, druggability/tractability, clinical novelty) are non-overlapping with the preprint and map directly onto connected resources (Open Targets, ChEMBL, ClinicalTrials.gov). Main uncertainty is that no wet-lab validation is possible, so credibility rests on multi-evidence triangulation rather than a single score.",
+    "confidence": "high"
+  }
+}
