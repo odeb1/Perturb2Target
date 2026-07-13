@@ -1,0 +1,22 @@
+{
+  "n_direction_raw": 2000,
+  "n_contam_removed": 201,
+  "n_direction_clean": 1515,
+  "corr_empz_ndegenes_before": -0.332,
+  "corr_empz_ndegenes_after": -0.071,
+  "n_survive_fdr": 0,
+  "anchor_pos_rate": 0.857,
+  "bg_pos_rate": 0.583,
+  "enrich_binom_p": 0.0073,
+  "mwu_p": 1.9808148716902336e-06,
+  "n_nominations": 11,
+  "drug_concordance": "5/5",
+  "drug_concordance_p": 0.0312,
+  "druggable_leads": [
+    "IL2RB",
+    "TYK2",
+    "IL2RA",
+    "IL7R",
+    "TNFRSF1A"
+  ]
+}

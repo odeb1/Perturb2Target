@@ -1,0 +1,8 @@
+gene,drug,drug_action,our_call,rev_clean,concordant,emp_z
+ITGA4,natalizumab,antagonize,antagonize,0.06841809302568436,True,-0.01777561567723751
+S1PR1,fingolimod,antagonize,antagonize,0.13845489919185638,True,0.6184185147285461
+DHODH,teriflunomide,antagonize,not measured,,,
+CD52,alemtuzumab,antagonize,antagonize,0.11753403395414352,True,0.3900102972984314
+MS4A1,ocrelizumab/rituximab,antagonize,not measured,,,
+TYK2,deucravacitinib*,antagonize,antagonize,0.3686658442020416,True,2.426754951477051
+IL2RA,"(daclizumab, withdrawn)",antagonize,antagonize,0.3277401626110077,True,2.3028783798217773
