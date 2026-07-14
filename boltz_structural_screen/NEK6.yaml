@@ -1,0 +1,15 @@
+version: 1
+# Target: NEK6 (Q9HC98, 313 aa) - Serine/threonine-protein kinase Nek6
+# Direction: driver_antagonize | peak condition: Stim8hr | class: kinase
+# Disease anchor: asthma
+# Ligand: NEK_inhibitor_scaffold - NEK-family Ser/Thr kinase; ATP-competitive aminopyridine scaffold
+sequences:
+  - protein:
+      id: A
+      sequence: MAGQPGHMPHGGSSNNLCHTLGPVHPPDPQRHPNTLSFRCSLADFQIEKKIGRGQFSEVYKATCLLDRKTVALKKVQIFEMMDAKARQDCVKEIGLLKQLNHPNIIKYLDSFIEDNELNIVLELADAGDLSQMIKYFKKQKRLIPERTVWKYFVQLCSAVEHMHSRRVMHRDIKPANVFITATGVVKLGDLGLGRFFSSETTAAHSLVGTPYYMSPERIHENGYNFKSDIWSLGCLLYEMAALQSPFYGDKMNLFSLCQKIEQCDYPPLPGEHYSEKLRELVSMCICPDPHQRPDIGYVHQVAKQMHIWMSST
+  - ligand:
+      id: L
+      smiles: 'O=C(Nc1cccc(-c2ccncc2)c1)c1ccc(N2CCNCC2)cc1'
+properties:
+  - affinity:
+      binder: L

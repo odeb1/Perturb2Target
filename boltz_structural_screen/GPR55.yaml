@@ -1,0 +1,15 @@
+version: 1
+# Target: GPR55 (Q9Y2T6, 319 aa) - G protein-coupled receptor 55
+# Direction: driver_antagonize | peak condition: Stim8hr | class: GPCR
+# Disease anchor: psoriatic arthritis
+# Ligand: GPR55_antagonist_CID16020046 - orphan GPCR GPR55; CID16020046 selective GPR55 antagonist
+sequences:
+  - protein:
+      id: A
+      sequence: MSQQNTSGDCLFDGVNELMKTLQFAVHIPTFVLGLLLNLLAIHGFSTFLKNRWPDYAATSIYMINLAVFDLLLVLSLPFKMVLSQVQSPFPSLCTLVECLYFVSMYGSVFTICFISMDRFLAIRYPLLVSHLRSPRKIFGICCTIWVLVWTGSIPIYSFHGKVEKYMCFHNMSDDTWSAKVFFPLEVFGFLLPMGIMGFCCSRSIHILLGRRDHTQDWVQQKACIYSIAASLAVFVVSFLPVHLGFFLQFLVRNSFIVECRAKQSISFFLQLSMCFSNVNCCLDVFCYYFVIKEFRMNIRAHRPSRVQLVLQDTTISRG
+  - ligand:
+      id: L
+      smiles: 'O=C(O)c1ccccc1NC(=O)c1cc(-c2ccccc2)n(-c2ccccc2)n1'
+properties:
+  - affinity:
+      binder: L

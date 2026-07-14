@@ -1,0 +1,15 @@
+version: 1
+# Target: PRKX (P51817, 358 aa) - cAMP-dependent protein kinase catalytic subunit PRKX
+# Direction: driver_antagonize | peak condition: Stim48hr | class: kinase
+# Disease anchor: Hashimoto thyroiditis
+# Ligand: PKA_inhibitor_H89 - cAMP-dependent kinase (PKA-like); H-89 isoquinoline-sulfonamide, canonical PKA-family inhibitor
+sequences:
+  - protein:
+      id: A
+      sequence: MEAPGLAQAAAAESDSRKVAEETPDGAPALCPSPEALSPEPPVYSLQDFDTLATVGTGTFGRVHLVKEKTAKHFFALKVMSIPDVIRLKQEQHVHNEKSVLKEVSHPFLIRLFWTWHDERFLYMLMEYVPGGELFSYLRNRGRFSSTTGLFYSAEIICAIEYLHSKEIVYRDLKPENILLDRDGHIKLTDFGFAKKLVDRTWTLCGTPEYLAPEVIQSKGHGRAVDWWALGILIFEMLSGFPPFFDDNPFGIYQKILAGKIDFPRHLDFHVKDLIKKLLVVDRTRRLGNMKNGANDVKHHRWFRSVDWEAVPQRKLKPPIVPKIAGDGDTSNFETYPENDWDTAAPVPQKDLEIFKNF
+  - ligand:
+      id: L
+      smiles: 'O=S(=O)(NCCNCc1ccc(Br)cc1)c1cccc2cnccc12'
+properties:
+  - affinity:
+      binder: L
