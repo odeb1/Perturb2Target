@@ -1,0 +1,17 @@
+{
+  "perturbation": "\u00b140% multiplicative, 2000 trials, seed 0",
+  "spearman_median": 0.9953278098500267,
+  "spearman_ci": [
+    0.9733347178615328,
+    0.9999486051945384
+  ],
+  "top50_jaccard_median": 0.8181818181818182,
+  "top20_jaccard_median": 0.7391304347826086,
+  "drop_one_retention": {
+    "causal": 0.72,
+    "genetics": 0.46,
+    "drug": 0.6,
+    "novelty": 0.84
+  },
+  "verdict": "Rankings robust to weight choice (rho=0.995); genetics most load-bearing, novelty least, consistent with the layer-ablation analysis."
+}

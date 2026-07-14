@@ -1,0 +1,17 @@
+{
+ "dataset": "Legut et al. 2022 Nature (Sanjana lab), GSE193736 bulk RNA-seq",
+ "design": "LTBR overexpression vs tNGFR control, primary human CD4+ and CD8+ T cells, rest & stim, n=3 each",
+ "independence": "fully arm's-length: different lab (Sanjana/NYU), different perturbation modality (ORF overexpression, not CRISPRi knockdown)",
+ "test": "LTBR is a top proliferation/NF-kB driver; overexpression should RAISE the pro-inflammatory program (mirror of a driver-antagonize knockdown)",
+ "signature_genes_present": 50,
+ "program_score_CD4_rest": 1.2223,
+ "program_score_CD4_stim": 0.6723,
+ "emp_z_CD4_rest": 8.635,
+ "emp_p_CD4_rest": 5.9e-18,
+ "emp_z_CD4_stim": 4.863,
+ "emp_p_CD4_stim": 1.16e-06,
+ "per_gene_consistency_CD4_rest": "38/50 = 76%",
+ "all_four_arms_positive": true,
+ "caveat": "Single-gene (LTBR) directional test, not a genome-scale concordance panel; overexpression modality differs from our knockdowns. It confirms the program+direction machinery on independent human-CD4 data, but is one perturbation, not many.",
+ "interpretation": "Independent, arm's-length confirmation that the directional program score responds correctly to a known driver in the predicted direction, in the same cell type (human CD4) as the source atlas, from a different lab and opposite perturbation modality."
+}

@@ -1,0 +1,5 @@
+comparison,cell,condition,program_score,emp_z,emp_p,null_mean,null_sd
+LTBR_OE_vs_tNGFR,CD4,rest,1.2223,8.635,5.9e-18,-0.0013,0.1417
+LTBR_OE_vs_tNGFR,CD4,stim,0.6723,4.863,1.16e-06,-0.0002,0.1383
+LTBR_OE_vs_tNGFR,CD8,rest,0.7447,,,,
+LTBR_OE_vs_tNGFR,CD8,stim,1.5219,,,,

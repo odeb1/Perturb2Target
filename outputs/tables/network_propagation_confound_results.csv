@@ -1,0 +1,5 @@
+method,recovery_auroc,recovery_ap,study_bias_dependence_spearman_vs_degree
+Node degree (study-bias),0.784,0.174,1.0
+Network propagation (RWR),0.859,0.196,0.844
+Our causal readout,0.779,0.05,-0.008
+Our integrated (4 layers),0.987,0.598,0.05

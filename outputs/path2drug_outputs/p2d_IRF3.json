@@ -1,0 +1,160 @@
+{
+ "target": "IRF3",
+ "direction": "antagonize",
+ "n_reachable_signature_genes": 48,
+ "top_paths": [
+  {
+   "endpoint": "STAT1",
+   "path": [
+    "IRF3",
+    "IFNB1",
+    "IFNAR1",
+    "STAT1"
+   ],
+   "len": 3,
+   "mean_confidence": 0.994
+  },
+  {
+   "endpoint": "NFKB1",
+   "path": [
+    "IRF3",
+    "IFNB1",
+    "TLR4",
+    "NFKB1"
+   ],
+   "len": 3,
+   "mean_confidence": 0.992
+  },
+  {
+   "endpoint": "STAT3",
+   "path": [
+    "IRF3",
+    "IFNB1",
+    "IFNAR1",
+    "JAK1",
+    "STAT3"
+   ],
+   "len": 4,
+   "mean_confidence": 0.996
+  },
+  {
+   "endpoint": "IL10RA",
+   "path": [
+    "IRF3",
+    "IFNB1",
+    "IFNAR1",
+    "JAK1",
+    "IL10RA"
+   ],
+   "len": 4,
+   "mean_confidence": 0.996
+  }
+ ],
+ "intermediate_nodes": [
+  {
+   "gene": "IFNAR1",
+   "observed": true,
+   "peak_signed_score": 0.20631290972232819,
+   "direction": "brake_agonize",
+   "peak_emp_fdr": 0.4531323596652199,
+   "direction_consistent": false,
+   "fdr_significant": false,
+   "edge_zscore_under_target_KD": -1.43,
+   "edge_functionally_confirmed": false,
+   "druggable": {
+    "max_phase": 4,
+    "action": "ANTAGONIST"
+   }
+  },
+  {
+   "gene": "IFNB1",
+   "observed": false,
+   "peak_signed_score": null,
+   "direction": null,
+   "peak_emp_fdr": null,
+   "direction_consistent": null,
+   "fdr_significant": null,
+   "edge_zscore_under_target_KD": null,
+   "edge_functionally_confirmed": null,
+   "druggable": {
+    "max_phase": 3,
+    "action": "INHIBITOR"
+   }
+  },
+  {
+   "gene": "TLR4",
+   "observed": false,
+   "peak_signed_score": null,
+   "direction": null,
+   "peak_emp_fdr": null,
+   "direction_consistent": null,
+   "fdr_significant": null,
+   "edge_zscore_under_target_KD": null,
+   "edge_functionally_confirmed": null,
+   "druggable": {
+    "max_phase": 3,
+    "action": "INHIBITOR"
+   }
+  },
+  {
+   "gene": "JAK1",
+   "observed": false,
+   "peak_signed_score": null,
+   "direction": null,
+   "peak_emp_fdr": null,
+   "direction_consistent": null,
+   "fdr_significant": null,
+   "edge_zscore_under_target_KD": null,
+   "edge_functionally_confirmed": null,
+   "druggable": {
+    "max_phase": 4,
+    "action": "INHIBITOR"
+   }
+  }
+ ],
+ "mechanism_backbone": "TARGET IRF3 (antagonize) \u2192 CD4 pro-inflammatory program\nDeterministic backbone (STRING confidence-weighted shortest paths):\n  [0.99] IRF3 \u2192 IFNB1 \u2192 IFNAR1 \u2192 STAT1\n  [0.99] IRF3 \u2192 IFNB1 \u2192 TLR4 \u2192 NFKB1\n  [1.00] IRF3 \u2192 IFNB1 \u2192 IFNAR1 \u2192 JAK1 \u2192 STAT3\n  [1.00] IRF3 \u2192 IFNB1 \u2192 IFNAR1 \u2192 JAK1 \u2192 IL10RA\nDruggable / observed intermediate nodes:\n  \u00b7 IFNAR1 (drug phase 4, KD program +0.21)\n  \u00b7 IFNB1 (drug phase 3)\n  \u00b7 TLR4 (drug phase 3)\n  \u00b7 JAK1 (drug phase 4)",
+ "method": "deterministic shortest-path over STRING (confidence-weighted)",
+ "signed_paths": [
+  {
+   "endpoint": "IFNG",
+   "path": [
+    "IRF3",
+    "IFNG"
+   ],
+   "len": 1,
+   "net_sign": 1
+  },
+  {
+   "endpoint": "TNF",
+   "path": [
+    "IRF3",
+    "TNF"
+   ],
+   "len": 1,
+   "net_sign": 1
+  },
+  {
+   "endpoint": "CCL3",
+   "path": [
+    "IRF3",
+    "CCL3"
+   ],
+   "len": 1,
+   "net_sign": -1
+  },
+  {
+   "endpoint": "CCL5",
+   "path": [
+    "IRF3",
+    "CCL5"
+   ],
+   "len": 1,
+   "net_sign": 1
+  }
+ ],
+ "signed_direction_prediction": {
+  "activation_effect_on_program": 1,
+  "knockdown_effect_on_program": -1,
+  "n_signature_genes_reached": 42
+ }
+}

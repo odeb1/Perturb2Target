@@ -1,0 +1,17 @@
+target_gene,direction,dir_call,drug_dir,concordant,peak_signed_score,on_axis
+IL2RA,driver_antagonize,antagonize,antagonize,True,-0.931,True
+STAT3,driver_antagonize,antagonize,antagonize,True,-0.918,True
+IL6R,driver_antagonize,antagonize,antagonize,True,-0.622,True
+PRKCQ,driver_antagonize,antagonize,antagonize,True,-0.546,True
+CD2,driver_antagonize,antagonize,antagonize,True,-1.146,True
+STAT1,driver_antagonize,antagonize,antagonize,True,-0.704,True
+ITK,driver_antagonize,antagonize,antagonize,True,-0.957,True
+NFKB1,driver_antagonize,antagonize,antagonize,True,-0.533,True
+JAK2,driver_antagonize,antagonize,antagonize,True,-0.417,True
+IL1R1,driver_antagonize,antagonize,antagonize,True,-0.343,True
+CHUK,driver_antagonize,antagonize,antagonize,True,-0.49,True
+IL4R,brake_agonize,agonize,antagonize,False,1.431,False
+ITGAL,brake_agonize,agonize,antagonize,False,0.726,False
+IMPDH2,brake_agonize,agonize,antagonize,False,0.868,False
+CARD11,brake_agonize,agonize,antagonize,False,0.591,False
+NR3C1,driver_antagonize,antagonize,agonize,False,-0.428,False

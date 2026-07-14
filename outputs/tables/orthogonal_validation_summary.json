@@ -1,0 +1,25 @@
+{
+ "source": "Gene_Perturbations_from_GEO (independent, multi-lab, multi-cell-type; non-Marson)",
+ "n_nominations_matched": 15,
+ "n_signatures_tested": 28,
+ "n_geo_studies": 19,
+ "gene_level_concordance": "8/12",
+ "gene_level_concordance_frac": 0.667,
+ "gene_level_binom_p": 0.194,
+ "n_ties": 3,
+ "canonical_drivers_concordant": [
+  "ARID1A",
+  "CREBBP",
+  "IRF3",
+  "STAT1",
+  "STAT3"
+ ],
+ "discordant_genes": [
+  "BATF",
+  "ITK",
+  "NF1",
+  "PTPN2"
+ ],
+ "lincs_l1000_ko_note": "LINCS L1000 CRISPR-KO consensus tested but unusable: L1000 landmark space covers only ~2.4 program-signature genes/signature and canonical controls were inconsistent (STAT1 correct, TBX21 flipped). Excluded as insufficient-coverage, not reported as a result.",
+ "interpretation": "Directionally consistent (67%, one-sided p=0.19) on fully arm's-length data; canonical drivers STAT1/STAT3/CREBBP/ARID1A/IRF3 replicate cleanly. Weaker than the matched-context Schmidt replication (rho=0.52) because GEO perturbations span heterogeneous, mostly non-T-cell contexts \u2014 consistent with the project's context-specificity thesis."
+}

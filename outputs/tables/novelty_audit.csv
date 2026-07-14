@@ -1,0 +1,12 @@
+gene,direction,rank,disease_anchor,primary_class,patents_mentioning_capped100,patents_target_directed,patents_directed_immune,trials,drugs,novelty_tier
+SIK2,brake_agonize,19,asthma,kinase,77,10,4,0,0,emerging_immune_IP
+CTSH,driver_antagonize,31,type 1 diabetes mellitus,enzyme,96,0,0,0,0,unencumbered
+NEK6,driver_antagonize,45,Abnormality of the skeletal system,kinase,92,2,0,0,0,patented_other_indication
+DAGLB,driver_antagonize,51,"osteogenesis imperfecta, type 21",enzyme,100,0,0,0,0,unencumbered
+ADAM19,brake_agonize,57,coronary artery disorder,enzyme,88,0,0,0,0,unencumbered
+BRD1,driver_antagonize,70,synovium disorder,enzyme,100,0,0,0,0,unencumbered
+PRKX,driver_antagonize,85,neurodegenerative disease,kinase,94,0,0,0,0,unencumbered
+IRAK3,brake_agonize,91,mixed connective tissue disease,kinase,87,3,1,1,0,emerging_immune_IP
+PIK3C3,brake_agonize,119,neurodegenerative disease,enzyme,70,0,0,0,0,unencumbered
+NCOA2,driver_antagonize,138,atrial fibrillation,enzyme,100,0,0,0,0,unencumbered
+GPR55,driver_antagonize,164,preeclampsia,GPCR,94,3,2,0,0,emerging_immune_IP

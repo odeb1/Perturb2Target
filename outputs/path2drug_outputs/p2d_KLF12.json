@@ -1,0 +1,109 @@
+{
+ "target": "KLF12",
+ "direction": "antagonize",
+ "n_reachable_signature_genes": 48,
+ "top_paths": [
+  {
+   "endpoint": "CXCR3",
+   "path": [
+    "KLF12",
+    "CXCR3"
+   ],
+   "len": 1,
+   "mean_confidence": 0.4
+  },
+  {
+   "endpoint": "CCL5",
+   "path": [
+    "KLF12",
+    "CXCR3",
+    "CCL5"
+   ],
+   "len": 2,
+   "mean_confidence": 0.7
+  },
+  {
+   "endpoint": "CCL3",
+   "path": [
+    "KLF12",
+    "CXCR3",
+    "CCL3"
+   ],
+   "len": 2,
+   "mean_confidence": 0.699
+  },
+  {
+   "endpoint": "CXCL8",
+   "path": [
+    "KLF12",
+    "CXCR3",
+    "CXCL8"
+   ],
+   "len": 2,
+   "mean_confidence": 0.699
+  }
+ ],
+ "intermediate_nodes": [
+  {
+   "gene": "CXCR3",
+   "observed": true,
+   "peak_signed_score": -0.4739614725112915,
+   "direction": "driver_antagonize",
+   "peak_emp_fdr": 0.012763910684577232,
+   "direction_consistent": true,
+   "fdr_significant": true,
+   "edge_zscore_under_target_KD": -1.85,
+   "edge_functionally_confirmed": false,
+   "druggable": null
+  }
+ ],
+ "mechanism_backbone": "TARGET KLF12 (antagonize) \u2192 CD4 pro-inflammatory program\nDeterministic backbone (STRING confidence-weighted shortest paths):\n  [0.40] KLF12 \u2192 CXCR3\n  [0.70] KLF12 \u2192 CXCR3 \u2192 CCL5\n  [0.70] KLF12 \u2192 CXCR3 \u2192 CCL3\n  [0.70] KLF12 \u2192 CXCR3 \u2192 CXCL8\nDruggable / observed intermediate nodes:\n  \u00b7 CXCR3 (KD program -0.47)",
+ "method": "deterministic shortest-path over STRING (confidence-weighted)",
+ "signed_paths": [
+  {
+   "endpoint": "CSF2",
+   "path": [
+    "KLF12",
+    "TFAP2A",
+    "CSF2"
+   ],
+   "len": 2,
+   "net_sign": -1
+  },
+  {
+   "endpoint": "TNF",
+   "path": [
+    "KLF12",
+    "TFAP2A",
+    "TNF"
+   ],
+   "len": 2,
+   "net_sign": -1
+  },
+  {
+   "endpoint": "LTA",
+   "path": [
+    "KLF12",
+    "TFAP2A",
+    "LTA"
+   ],
+   "len": 2,
+   "net_sign": -1
+  },
+  {
+   "endpoint": "GZMB",
+   "path": [
+    "KLF12",
+    "TFAP2A",
+    "GZMB"
+   ],
+   "len": 2,
+   "net_sign": -1
+  }
+ ],
+ "signed_direction_prediction": {
+  "activation_effect_on_program": -1,
+  "knockdown_effect_on_program": 1,
+  "n_signature_genes_reached": 33
+ }
+}

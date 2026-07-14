@@ -1,0 +1,23 @@
+{
+ "independent_screen": "Gene_Perturbations_from_GEO (1,460 loss-of-function signatures, multi-lab, multi-species/cell-type)",
+ "matrix_shape": [
+  1460,
+  13985
+ ],
+ "signature_genes_present": 44,
+ "machinery": "directional_screen.score_screen (packaged, unmodified) \u2014 program_score + composition-matched empirical null + BH-FDR",
+ "n_significant_fdr05": 52,
+ "reproducibility_spearman_across_seeds": 0.99,
+ "canonical_recovery": "IL2/AIRE/CTLA4 KO \u2192 raised program (loss of tolerance); STAT1 KO \u2192 lowered (driver); textbook-consistent",
+ "top_brake_agonize": [
+  "Aire KO mouse GSE30129 sample 1676",
+  "Il2 KO mouse GSE23398 sample 1487",
+  "Il2 KO mouse GSE23398 sample 1489"
+ ],
+ "top_driver_antagonize": [
+  "Il10 KO mouse GSE39859 sample 1097",
+  "Notch2 KO mouse GSE45681 sample 2768",
+  "Il10 KO mouse GSE39859 sample 1099"
+ ],
+ "interpretation": "The directional_screen machinery transfers unmodified to a structurally different independent perturbation dataset (signed membership matrix vs continuous Perturb-seq z-matrix), recovers canonical immune-tolerance directionality, and is reproducible (rho=0.99). Demonstrates the method/tool generalizes beyond the source atlas even where cell-type/species/assay differ."
+}

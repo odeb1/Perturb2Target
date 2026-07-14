@@ -1,0 +1,46 @@
+tf_target,tf_rank,tf_direction,tf_disease,neighbor,string_score,neighbor_max_phase,neighbor_action,direction_matched,is_intermediate
+IRF8,6,brake_agonize,immunodeficiency 32B,IFNB1,0.751,3,INHIBITOR,False,True
+IRF8,6,brake_agonize,immunodeficiency 32B,CSF1R,0.723,4,ANTAGONIST;INHIBITOR,False,True
+IRF8,6,brake_agonize,immunodeficiency 32B,IFNG,0.859,4,INHIBITOR,False,False
+IRF8,6,brake_agonize,immunodeficiency 32B,CD86,0.708,4,INHIBITOR,False,False
+STAT4,9,driver_antagonize,disabling pansclerotic morphea of childhood,JAK1,0.988,4,INHIBITOR,True,True
+STAT4,9,driver_antagonize,disabling pansclerotic morphea of childhood,JAK2,0.977,4,INHIBITOR,True,True
+STAT4,9,driver_antagonize,disabling pansclerotic morphea of childhood,TYK2,0.973,4,INHIBITOR;NEGATIVE ALLOSTERIC MODULATOR,True,True
+STAT4,9,driver_antagonize,disabling pansclerotic morphea of childhood,JAK3,0.973,4,INHIBITOR,True,True
+STAT4,9,driver_antagonize,disabling pansclerotic morphea of childhood,IFNAR1,0.862,4,ANTAGONIST,True,True
+STAT4,9,driver_antagonize,disabling pansclerotic morphea of childhood,IFNG,0.981,4,INHIBITOR,True,False
+STAT4,9,driver_antagonize,disabling pansclerotic morphea of childhood,IL6,0.861,4,ANTAGONIST;BINDING AGENT;INHIBITOR,True,False
+STAT4,9,driver_antagonize,disabling pansclerotic morphea of childhood,CD4,0.832,4,AGONIST;BINDING AGENT;INHIBITOR;NEGATIVE MODULATOR;OTHER,True,False
+STAT4,9,driver_antagonize,disabling pansclerotic morphea of childhood,IL18,0.791,3,CROSS-LINKING AGENT;INHIBITOR,True,False
+STAT4,9,driver_antagonize,disabling pansclerotic morphea of childhood,MIF,0.78,3,INHIBITOR,True,False
+STAT4,9,driver_antagonize,disabling pansclerotic morphea of childhood,IL17A,0.779,4,BINDING AGENT;INHIBITOR,True,False
+TBX21,20,driver_antagonize,hypothyroidism,IFNG,0.964,4,INHIBITOR,True,False
+TBX21,20,driver_antagonize,hypothyroidism,CD4,0.947,4,AGONIST;BINDING AGENT;INHIBITOR;NEGATIVE MODULATOR;OTHER,True,False
+TBX21,20,driver_antagonize,hypothyroidism,IL17A,0.937,4,BINDING AGENT;INHIBITOR,True,False
+TBX21,20,driver_antagonize,hypothyroidism,IL13,0.852,4,INHIBITOR,True,False
+TBX21,20,driver_antagonize,hypothyroidism,IL17F,0.843,4,INHIBITOR,True,False
+TBX21,20,driver_antagonize,hypothyroidism,IL2RA,0.841,3,ANTAGONIST;BINDING AGENT,True,False
+TBX21,20,driver_antagonize,hypothyroidism,IL5,0.839,4,INHIBITOR,True,False
+TBX21,20,driver_antagonize,hypothyroidism,CD80,0.835,4,INHIBITOR,True,False
+TBX21,20,driver_antagonize,hypothyroidism,IL6,0.829,4,ANTAGONIST;BINDING AGENT;INHIBITOR,True,False
+TBX21,20,driver_antagonize,hypothyroidism,CTLA4,0.822,4,INHIBITOR,True,False
+GATA3,33,brake_agonize,hypoparathyroidism-deafness-renal disease syndrome,ESR1,0.982,4,AGONIST;ANTAGONIST;DEGRADER;MODULATOR,True,True
+GATA3,33,brake_agonize,hypoparathyroidism-deafness-renal disease syndrome,PGR,0.81,4,AGONIST;ANTAGONIST;MODULATOR,True,True
+GATA3,33,brake_agonize,hypoparathyroidism-deafness-renal disease syndrome,CD4,0.899,4,AGONIST;BINDING AGENT;INHIBITOR;NEGATIVE MODULATOR;OTHER,True,False
+GATA3,33,brake_agonize,hypoparathyroidism-deafness-renal disease syndrome,HDAC1,0.911,4,INHIBITOR,False,True
+GATA3,33,brake_agonize,hypoparathyroidism-deafness-renal disease syndrome,HDAC2,0.844,4,INHIBITOR,False,True
+GATA3,33,brake_agonize,hypoparathyroidism-deafness-renal disease syndrome,IL33,0.816,3,BINDING AGENT;INHIBITOR,False,True
+GATA3,33,brake_agonize,hypoparathyroidism-deafness-renal disease syndrome,IFNG,0.89,4,INHIBITOR,False,False
+GATA3,33,brake_agonize,hypoparathyroidism-deafness-renal disease syndrome,IL13,0.882,4,INHIBITOR,False,False
+GATA3,33,brake_agonize,hypoparathyroidism-deafness-renal disease syndrome,IL5,0.876,4,INHIBITOR,False,False
+BATF,39,driver_antagonize,multiple sclerosis,PDCD1,0.802,4,ANTAGONIST;INHIBITOR,True,True
+BATF,39,driver_antagonize,multiple sclerosis,IL17F,0.736,4,INHIBITOR,True,False
+SETBP1,43,driver_antagonize,Schinzel-Giedion syndrome,CSF3R,0.727,4,AGONIST;ANTAGONIST,True,True
+IRF3,44,driver_antagonize,Herpetic encephalitis,IFNB1,0.985,3,INHIBITOR,True,True
+IRF3,44,driver_antagonize,Herpetic encephalitis,TRAF3,0.97,3,INHIBITOR,True,True
+IRF3,44,driver_antagonize,Herpetic encephalitis,TLR4,0.947,3,INHIBITOR,True,True
+IRF3,44,driver_antagonize,Herpetic encephalitis,TLR9,0.895,4,AGONIST;ANTAGONIST,True,True
+IRF3,44,driver_antagonize,Herpetic encephalitis,TLR7,0.886,4,ACTIVATOR;AGONIST;ANTAGONIST;INHIBITOR,True,True
+IRF3,44,driver_antagonize,Herpetic encephalitis,TLR3,0.978,3,ACTIVATOR;AGONIST,False,True
+IRF3,44,driver_antagonize,Herpetic encephalitis,IFNA2,0.903,3,EXOGENOUS GENE,False,True
+RUNX3,83,brake_agonize,asthma,SRC,0.933,4,INHIBITOR,False,True

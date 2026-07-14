@@ -1,0 +1,171 @@
+{
+ "target": "TBX21",
+ "direction": "antagonize",
+ "n_reachable_signature_genes": 47,
+ "top_paths": [
+  {
+   "endpoint": "AHR",
+   "path": [
+    "TBX21",
+    "GATA3",
+    "ESR1",
+    "AHR"
+   ],
+   "len": 3,
+   "mean_confidence": 0.962
+  },
+  {
+   "endpoint": "STAT3",
+   "path": [
+    "TBX21",
+    "GATA3",
+    "ESR1",
+    "SRC",
+    "STAT3"
+   ],
+   "len": 4,
+   "mean_confidence": 0.994
+  },
+  {
+   "endpoint": "NFKB1",
+   "path": [
+    "TBX21",
+    "GATA3",
+    "ESR1",
+    "HDAC1",
+    "NFKB1"
+   ],
+   "len": 4,
+   "mean_confidence": 0.993
+  },
+  {
+   "endpoint": "STAT1",
+   "path": [
+    "TBX21",
+    "GATA3",
+    "ESR1",
+    "SRC",
+    "STAT3",
+    "STAT1"
+   ],
+   "len": 5,
+   "mean_confidence": 0.995
+  }
+ ],
+ "intermediate_nodes": [
+  {
+   "gene": "HDAC1",
+   "observed": true,
+   "peak_signed_score": -0.4384184777736664,
+   "direction": "driver_antagonize",
+   "peak_emp_fdr": 0.16350183850265457,
+   "direction_consistent": true,
+   "fdr_significant": false,
+   "edge_zscore_under_target_KD": -1.34,
+   "edge_functionally_confirmed": false,
+   "druggable": {
+    "max_phase": 4,
+    "action": "INHIBITOR"
+   }
+  },
+  {
+   "gene": "SRC",
+   "observed": true,
+   "peak_signed_score": 0.4462193548679352,
+   "direction": "brake_agonize",
+   "peak_emp_fdr": 0.025435727811162986,
+   "direction_consistent": false,
+   "fdr_significant": true,
+   "edge_zscore_under_target_KD": -0.36,
+   "edge_functionally_confirmed": false,
+   "druggable": {
+    "max_phase": 4,
+    "action": "INHIBITOR"
+   }
+  },
+  {
+   "gene": "ESR1",
+   "observed": true,
+   "peak_signed_score": 0.10734662413597107,
+   "direction": "brake_agonize",
+   "peak_emp_fdr": 0.8004826880721826,
+   "direction_consistent": false,
+   "fdr_significant": false,
+   "edge_zscore_under_target_KD": -0.19,
+   "edge_functionally_confirmed": false,
+   "druggable": {
+    "max_phase": 4,
+    "action": "AGONIST;ANTAGONIST;DEGRADER;MODULATOR"
+   }
+  },
+  {
+   "gene": "STAT3",
+   "observed": true,
+   "peak_signed_score": -0.9183144569396973,
+   "direction": "driver_antagonize",
+   "peak_emp_fdr": 0.0024419274440240775,
+   "direction_consistent": true,
+   "fdr_significant": true,
+   "edge_zscore_under_target_KD": 0.31,
+   "edge_functionally_confirmed": false,
+   "druggable": null
+  },
+  {
+   "gene": "GATA3",
+   "observed": true,
+   "peak_signed_score": 0.8135766983032227,
+   "direction": "brake_agonize",
+   "peak_emp_fdr": 0.004220422735578892,
+   "direction_consistent": false,
+   "fdr_significant": true,
+   "edge_zscore_under_target_KD": 0.21,
+   "edge_functionally_confirmed": false,
+   "druggable": null
+  }
+ ],
+ "mechanism_backbone": "TARGET TBX21 (antagonize) \u2192 CD4 pro-inflammatory program\nDeterministic backbone (STRING confidence-weighted shortest paths):\n  [0.96] TBX21 \u2192 GATA3 \u2192 ESR1 \u2192 AHR\n  [0.99] TBX21 \u2192 GATA3 \u2192 ESR1 \u2192 SRC \u2192 STAT3\n  [0.99] TBX21 \u2192 GATA3 \u2192 ESR1 \u2192 HDAC1 \u2192 NFKB1\n  [0.99] TBX21 \u2192 GATA3 \u2192 ESR1 \u2192 SRC \u2192 STAT3 \u2192 STAT1\nDruggable / observed intermediate nodes:\n  \u00b7 HDAC1 (drug phase 4, KD program -0.44)\n  \u00b7 SRC (drug phase 4, KD program +0.45)\n  \u00b7 ESR1 (drug phase 4, KD program +0.11)\n  \u00b7 STAT3 (KD program -0.92)\n  \u00b7 GATA3 (KD program +0.81)",
+ "method": "deterministic shortest-path over STRING (confidence-weighted)",
+ "signed_paths": [
+  {
+   "endpoint": "IFNG",
+   "path": [
+    "TBX21",
+    "IFNG"
+   ],
+   "len": 1,
+   "net_sign": 1
+  },
+  {
+   "endpoint": "STAT4",
+   "path": [
+    "TBX21",
+    "STAT4"
+   ],
+   "len": 1,
+   "net_sign": 1
+  },
+  {
+   "endpoint": "CXCR3",
+   "path": [
+    "TBX21",
+    "CXCR3"
+   ],
+   "len": 1,
+   "net_sign": 1
+  },
+  {
+   "endpoint": "IL17F",
+   "path": [
+    "TBX21",
+    "IL17F"
+   ],
+   "len": 1,
+   "net_sign": 1
+  }
+ ],
+ "signed_direction_prediction": {
+  "activation_effect_on_program": 1,
+  "knockdown_effect_on_program": -1,
+  "n_signature_genes_reached": 42
+ }
+}

@@ -1,0 +1,10 @@
+score_axis,circularity,auroc,avg_precision,delta_ap_vs_full,n_positives,n_universe,random_ap
+Disease genetics (OT),partial,0.909,0.228,,19,1923,0.0099
+Causal + genetics,clean,0.838,0.276,,19,1923,0.0099
+Causal effect,clean,0.585,0.025,,19,1923,0.0099
+Genetic constraint (LoF),clean,0.592,0.023,,19,1923,0.0099
+Full integrated (4 layers),mixed,0.82,0.37,0.0,19,1923,0.0099
+ablation: drop causal,False,0.906,0.316,-0.055,19,1923,0.0099
+ablation: drop genetics,partial,0.659,0.147,-0.223,19,1923,0.0099
+ablation: drop drug,True,0.807,0.096,-0.275,19,1923,0.0099
+ablation: drop novelty,True,0.821,0.392,0.022,19,1923,0.0099

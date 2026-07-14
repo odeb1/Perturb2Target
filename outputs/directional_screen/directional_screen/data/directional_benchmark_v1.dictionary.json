@@ -1,0 +1,25 @@
+{
+  "name": "Directional target-nomination benchmark",
+  "version": "v1.0",
+  "n_targets": 63,
+  "n_driver_antagonize": 57,
+  "n_brake_agonize": 6,
+  "description": "Gold-standard directional labels for immune drug targets. true_direction is derived from the mechanism of the APPROVED/clinical drug against each target (an inhibitor implies the target is a driver to be antagonized; an agonist/replacement implies a brake to be agonized). This is external ground truth INDEPENDENT of any perturbation screen, usable to benchmark whether a directional screen-scoring method calls the therapeutically correct direction.",
+  "columns": {
+    "gene": "HGNC symbol",
+    "true_direction": "driver_antagonize | brake_agonize \u2014 from approved-drug mechanism",
+    "framework_call": "the Perturb2Target framework's call (for reference)",
+    "program_score_signed": "the framework's signed program score (neg=driver)",
+    "framework_correct": "1 if framework_call==true_direction",
+    "opentargets_genetic_score": "OT genetic-association score (context; genetics is direction-agnostic)",
+    "in_perturbseq_shortlist": "whether the gene passed the Perturb-seq quality gate"
+  },
+  "honest_baseline": {
+    "framework_raw_accuracy": 0.619,
+    "majority_class_baseline": 0.905,
+    "note": "On the full 63-target set the framework's directional accuracy (0.62) is BELOW the majority-class baseline (0.90) because the set is dominated by antagonize targets; balanced accuracy ~0.57, permutation p~0.30. This benchmark is released WITH this honest negative so others can measure directional resolution on their own screens rather than assume it.",
+    "balanced_accuracy": 0.566,
+    "permutation_p": 0.3
+  },
+  "citation": "Perturb2Target (Claude Science hackathon). Directional labels curated from approved-drug mechanisms; source screen Zhu, Dann et al. 2025 bioRxiv 10.64898/2025.12.23.696273."
+}

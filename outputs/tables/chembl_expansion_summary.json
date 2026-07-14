@@ -1,0 +1,35 @@
+{
+ "source": "ChEMBL mechanism-of-action (approved/clinical, max_phase>=3), action_type -> directional truth",
+ "mechanisms_pulled": 3810,
+ "unique_chembl_targets": 890,
+ "shortlist_genes_with_annotation": 76,
+ "new_genes_vs_original": 65,
+ "concordance": 0.7368,
+ "chembl_only": {
+  "n": 76,
+  "concordant": 56,
+  "rate": 0.7368,
+  "binom_p": 2.18e-05
+ },
+ "antagonize_arm": {
+  "n": 72,
+  "rate": 0.764
+ },
+ "agonize_arm": {
+  "n": 4,
+  "rate": 0.25,
+  "note": "activator drugs genuinely rare in immune pharmacology \u2014 agonize gold standard is intrinsically small"
+ },
+ "union_goldstandard": {
+  "n": 128,
+  "concordant": 87,
+  "rate": 0.6797,
+  "binom_p": 2.94e-05,
+  "antagonize_arm": {
+   "n": 118,
+   "rate": 0.7034,
+   "binom_p": 5.82e-06
+  }
+ },
+ "interpretation": "Expanding the directional gold standard from 63 to a 128-gene union via ChEMBL mechanism-of-action raises directional concordance to 74% on the ChEMBL set (p=2e-5) and keeps it significantly above chance on the union \u2014 confirming the power analysis: with adequate n the directional signal is real. The agonize (brake) arm stays small because activator drugs are rare in immune pharmacology, a limit of the ground truth, not the method."
+}

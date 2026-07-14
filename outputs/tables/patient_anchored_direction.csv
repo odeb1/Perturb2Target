@@ -1,0 +1,8 @@
+disease,program_elevation,program_overlap_n,antagonize_reverses
+SLE (lupus),-0.6,5,False
+Type 1 diabetes,-0.4,10,False
+Rheumatoid arthritis,-0.273,11,False
+Asthma,0.13,23,True
+Crohn's disease,0.273,11,True
+Ulcerative colitis,0.333,9,True
+Psoriasis,0.429,7,True
