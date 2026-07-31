@@ -37,6 +37,21 @@ C_BG = "#f5f7fa"       # app background (light)
 C_PANEL = "#ffffff"    # plot / card background
 C_INK = "#1b2733"      # primary text
 C_OXFORD = "#002147"   # Oxford Blue — banner / brand
+C_OXFORD_LT = "#01305f"  # lighter Oxford — gradients, hover states
+C_OXFORD_DK = "#00152e"  # deepest Oxford — shadows, sidebar footer
+C_BRASS = "#b08d57"      # muted brass — for use ON Oxford Blue (5.2:1 there)
+# Darker brass for brass-on-light-background text. The lighter #b08d57 only reaches
+# 2.9:1 on the page background, below the 3:1 WCAG floor even for large text, so
+# anything brass sitting on white or C_BG uses this instead.
+C_BRASS_DK = "#8a6a38"
+C_LINE = "#e3e9f0"       # hairline borders
+C_MUTED = "#5a6b7b"      # secondary text
+# UI font stack. Inter is loaded from Google Fonts with a full system fallback, so the
+# app still renders correctly if the webfont is unavailable (offline, or blocked).
+FONT_UI = ("Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, "
+           "'Helvetica Neue', Arial, sans-serif")
+FONT_DISPLAY = ("'Source Serif 4', 'Iowan Old Style', 'Palatino Linotype', "
+                "Palatino, Georgia, serif")
 C_STRUCT_BG = "0xeef2f7"  # 3D viewer background (light)
 
 # ----------------------------------------------------------------------------- data
@@ -610,11 +625,11 @@ def directional_map(dfp, highlight=None):
             hoverinfo="skip", showlegend=False))
     fig.update_layout(
         template="plotly_white", paper_bgcolor=C_PANEL, plot_bgcolor=C_PANEL,
-        font=dict(color=C_INK),
+        font=dict(color=C_INK, family=FONT_UI),
         height=500, margin=dict(l=60, r=20, t=70, b=90),
         title=dict(text="Directional map — causal effect vs human genetics<br>"
                         "<sup>bubble size = integrated score</sup>",
-                   font=dict(size=15, color=C_INK), x=0.01, xanchor="left", y=0.97, yanchor="top"),
+                   font=dict(size=15, color=C_OXFORD), x=0.01, xanchor="left", y=0.97, yanchor="top"),
         xaxis_title="causal directional strength", yaxis_title="human-genetics support",
         xaxis=dict(gridcolor="#e3e8ef"), yaxis=dict(gridcolor="#e3e8ef"),
         legend=dict(orientation="h", yanchor="top", y=-0.16, x=0.5, xanchor="center",
@@ -631,9 +646,9 @@ def evidence_bar(row):
                     line=dict(width=0)),
         text=[f"{v:.2f}" for v in comps.values()], textposition="outside"))
     fig.update_layout(template="plotly_white", paper_bgcolor=C_PANEL, plot_bgcolor=C_PANEL,
-                      font=dict(color=C_INK),
+                      font=dict(color=C_INK, family=FONT_UI),
                       height=230, margin=dict(l=10, r=30, t=36, b=10),
-                      title=dict(text=f"{row.target_gene}: evidence components", font=dict(size=13, color=C_INK)),
+                      title=dict(text=f"{row.target_gene}: evidence components", font=dict(size=13, color=C_OXFORD)),
                       xaxis=dict(range=[0, 1.05], gridcolor="#e3e8ef"))
     return fig
 
@@ -656,10 +671,10 @@ def signature_heatmap(sigdf, gene, condition):
     n_pro = int((d.arm == "pro_inflammatory").sum())
     fig.update_layout(
         template="plotly_white", paper_bgcolor=C_PANEL, plot_bgcolor=C_PANEL,
-        font=dict(color=C_INK), height=760, margin=dict(l=10, r=10, t=48, b=10),
+        font=dict(color=C_INK, family=FONT_UI), height=760, margin=dict(l=10, r=10, t=48, b=10),
         title=dict(text=f"{gene} KD @ {condition}: signature-gene response<br>"
                         f"<sup>top {n_pro} = pro-inflammatory arm · bottom = regulatory arm</sup>",
-                   font=dict(size=13, color=C_INK)),
+                   font=dict(size=13, color=C_OXFORD)),
         xaxis=dict(title="per-gene z-score (KD vs control)", gridcolor="#e3e8ef", zeroline=True,
                    zerolinecolor="#9fb3c8"),
         yaxis=dict(autorange="reversed", tickfont=dict(size=9)))
@@ -693,10 +708,10 @@ def signature_heatmap_animated(sigdf, gene):
                     frames=[go.Frame(data=[bars(c)], name=c) for c in conds])
     fig.update_layout(
         template="plotly_white", paper_bgcolor=C_PANEL, plot_bgcolor=C_PANEL,
-        font=dict(color=C_INK), height=780, margin=dict(l=10, r=10, t=52, b=10),
+        font=dict(color=C_INK, family=FONT_UI), height=780, margin=dict(l=10, r=10, t=52, b=10),
         title=dict(text=f"{gene}: signature-gene response as the T cell activates<br>"
                         f"<sup>top {n_pro} = pro-inflammatory arm · bottom = regulatory · press ▶</sup>",
-                   font=dict(size=13, color=C_INK)),
+                   font=dict(size=13, color=C_OXFORD)),
         xaxis=dict(title="per-gene z-score (KD vs control)", range=[-8, 8],
                    gridcolor="#e3e8ef", zeroline=True, zerolinecolor="#9fb3c8"),
         yaxis=dict(autorange="reversed", tickfont=dict(size=9)),
@@ -732,11 +747,11 @@ def funnel_animated(stages):
     fig = go.Figure(data=[frame_bars(1)],
                     frames=[go.Frame(data=[frame_bars(k)], name=str(k)) for k in range(1, len(stages) + 1)])
     fig.update_layout(
-        template="plotly_white", paper_bgcolor=C_PANEL, plot_bgcolor=C_PANEL, font=dict(color=C_INK),
+        template="plotly_white", paper_bgcolor=C_PANEL, plot_bgcolor=C_PANEL, font=dict(color=C_INK, family=FONT_UI),
         height=420, margin=dict(l=10, r=60, t=56, b=30),
         title=dict(text="From genome to six leads — one filter at a time<br>"
                         "<sup>press ▶ to watch 11,526 genes narrow to 6 nominations</sup>",
-                   font=dict(size=15, color=C_INK)),
+                   font=dict(size=15, color=C_OXFORD)),
         xaxis=dict(title="targets remaining (log)", type="log", gridcolor="#e3e8ef"),
         yaxis=dict(autorange="reversed", tickfont=dict(size=12)),
         updatemenus=[dict(type="buttons", showactive=False, x=0.98, y=1.10, xanchor="right",
@@ -773,9 +788,9 @@ def score_buildup(row):
     total = sum(contrib)
     fig.update_layout(
         barmode="stack", template="plotly_white", paper_bgcolor=C_PANEL, plot_bgcolor=C_PANEL,
-        font=dict(color=C_INK), height=200, margin=dict(l=10, r=30, t=46, b=10),
+        font=dict(color=C_INK, family=FONT_UI), height=200, margin=dict(l=10, r=30, t=46, b=10),
         title=dict(text=f"{row.target_gene}: how the integrated score ({total:.3f}) is built",
-                   font=dict(size=13, color=C_INK)),
+                   font=dict(size=13, color=C_OXFORD)),
         xaxis=dict(range=[0, 1.02], gridcolor="#e3e8ef"), yaxis=dict(showticklabels=False),
         legend=dict(orientation="h", y=-0.4, x=0.5, xanchor="center"),
         updatemenus=[dict(type="buttons", showactive=False, x=0.98, y=1.5, xanchor="right",
@@ -812,11 +827,11 @@ def condition_slider_map(mapd, genes=None):
     xmax = max(abs(d[[f"emp_z__{c}" for c in conds]].to_numpy().min()),
                abs(d[[f"emp_z__{c}" for c in conds]].to_numpy().max()))
     fig.update_layout(
-        template="plotly_white", paper_bgcolor=C_PANEL, plot_bgcolor=C_PANEL, font=dict(color=C_INK),
+        template="plotly_white", paper_bgcolor=C_PANEL, plot_bgcolor=C_PANEL, font=dict(color=C_INK, family=FONT_UI),
         height=520, margin=dict(l=60, r=20, t=70, b=90),
         title=dict(text="Context dynamics — directional signal as CD4+ T cells activate<br>"
                         "<sup>play to move Rest → 8 h → 48 h post-stimulation</sup>",
-                   font=dict(size=15, color=C_INK), x=0.01, xanchor="left", y=0.97, yanchor="top"),
+                   font=dict(size=15, color=C_OXFORD), x=0.01, xanchor="left", y=0.97, yanchor="top"),
         xaxis=dict(title="causal directional strength (empirical z)", gridcolor="#e3e8ef",
                    range=[-xmax * 1.05, xmax * 1.05], zeroline=True, zerolinecolor="#9fb3c8"),
         yaxis=dict(title="human-genetics support", gridcolor="#e3e8ef"),
@@ -850,10 +865,10 @@ def disease_sunburst(dfp):
     fig = px.sunburst(d, path=["dir_lbl", "cls", "disease"],
                       color="dir_lbl",
                       color_discrete_map={"Antagonize drivers": C_DRIVER, "Agonize brakes": C_BRAKE})
-    fig.update_layout(template="plotly_white", paper_bgcolor=C_PANEL, font=dict(color=C_INK),
+    fig.update_layout(template="plotly_white", paper_bgcolor=C_PANEL, font=dict(color=C_INK, family=FONT_UI),
                       height=480, margin=dict(l=10, r=10, t=50, b=10),
                       title=dict(text="Where the nominations sit — direction → class → disease",
-                                 font=dict(size=14, color=C_INK)))
+                                 font=dict(size=14, color=C_OXFORD)))
     return fig
 
 def query_trace_map(dfp, match_genes):
@@ -881,10 +896,10 @@ def query_trace_map(dfp, match_genes):
                     frames=[go.Frame(data=traces(False), name="all"),
                             go.Frame(data=traces(True), name="matches")])
     fig.update_layout(
-        template="plotly_white", paper_bgcolor=C_PANEL, plot_bgcolor=C_PANEL, font=dict(color=C_INK),
+        template="plotly_white", paper_bgcolor=C_PANEL, plot_bgcolor=C_PANEL, font=dict(color=C_INK, family=FONT_UI),
         height=500, margin=dict(l=60, r=20, t=64, b=80),
         title=dict(text=f"Query trace — {len(match)} matches light up in the directional landscape",
-                   font=dict(size=15, color=C_INK), x=0.01, xanchor="left"),
+                   font=dict(size=15, color=C_OXFORD), x=0.01, xanchor="left"),
         xaxis=dict(title="causal directional strength", gridcolor="#e3e8ef"),
         yaxis=dict(title="human-genetics support", gridcolor="#e3e8ef"),
         legend=dict(orientation="h", yanchor="top", y=-0.14, x=0.5, xanchor="center"),
@@ -914,43 +929,143 @@ def gauge_row(row):
             gauge=dict(axis=dict(range=[0, 1]), bar=dict(color=dircol),
                        bgcolor="#eef2f7"),
             title=dict(text=lab, font=dict(size=12))), row=1, col=i)
-    fig.update_layout(paper_bgcolor=C_PANEL, font=dict(color=C_INK),
+    fig.update_layout(paper_bgcolor=C_PANEL, font=dict(color=C_INK, family=FONT_UI),
                       height=180, margin=dict(l=10, r=10, t=10, b=10))
     return fig
 
 # --------------------------------------------------------------------------- UI
 st.set_page_config(page_title="Perturb2Target Explorer", layout="wide", page_icon="🧬")
 st.markdown(f"""
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
 <style>
-  .stApp {{ background: {C_BG}; }}
-  /* Banner in Oxford Blue (#002147). The second gradient stop is a marginally
-     lighter shade of the same hue, so the panel keeps some depth while reading
-     as a single Oxford Blue field rather than a two-colour wash. */
-  .hero {{ background: linear-gradient(105deg,{C_OXFORD} 0%,#01305f 100%);
-           border-radius:14px; padding:20px 26px; margin-bottom:14px;
-           box-shadow:0 2px 10px rgba(0,33,71,0.28); }}
-  .hero h1 {{ margin:0; font-size:30px; color:#ffffff; letter-spacing:-0.5px; }}
-  /* Subtitle retuned from the old cyan tint to a neutral blue-grey: on Oxford Blue
-     it keeps a 10:1 contrast ratio and no longer carries the teal cast. */
-  .hero p  {{ margin:6px 0 0 0; color:#ccdcea; font-size:14px; }}
-  .kpi {{ background:{C_PANEL}; border:1px solid #dfe6ee; border-radius:12px;
-          padding:14px 16px; text-align:center; box-shadow:0 1px 4px rgba(27,39,51,0.06); }}
-  .kpi .v {{ font-size:26px; font-weight:700; color:{C_OXFORD}; }}
-  .kpi .l {{ font-size:12px; color:#5a6b7b; margin-top:2px; }}
-  .pill {{ display:inline-block; padding:2px 10px; border-radius:12px; font-size:12px;
-           font-weight:600; color:white; }}
+  /* ---------- foundation ---------- */
+  html, body, .stApp, [class*="css"] {{ font-family:{FONT_UI}; }}
+  .stApp {{ background:{C_BG}; color:{C_INK}; }}
+  .block-container {{ padding-top:1.6rem; padding-bottom:3rem; max-width:1500px; }}
+  h1,h2,h3,h4,h5 {{ font-family:{FONT_UI}; color:{C_OXFORD}; letter-spacing:-0.15px; }}
+  a {{ color:{C_OXFORD_LT}; text-decoration:none; border-bottom:1px solid rgba(1,48,95,0.25); }}
+  a:hover {{ border-bottom-color:{C_BRASS}; }}
+
+  /* ---------- masthead ---------- */
+  .hero {{ background:linear-gradient(118deg,{C_OXFORD} 0%,{C_OXFORD_LT} 62%,#013b73 100%);
+           border-radius:4px; padding:30px 34px 28px 34px; margin-bottom:20px;
+           border-top:3px solid {C_BRASS};
+           box-shadow:0 10px 30px -12px rgba(0,21,46,0.55); position:relative; overflow:hidden; }}
+  /* Faint engraved rule under the wordmark — the only ornament, kept subtle. */
+  .hero:after {{ content:""; position:absolute; left:34px; right:34px; top:0; height:1px;
+                 background:linear-gradient(90deg,rgba(176,141,87,0.55),transparent 60%); }}
+  .hero .eyebrow {{ font-size:10.5px; font-weight:600; letter-spacing:2.4px;
+                    text-transform:uppercase; color:{C_BRASS}; margin:0 0 9px 0; }}
+  .hero h1 {{ font-family:{FONT_DISPLAY}; font-weight:700; margin:0; font-size:35px;
+              color:#ffffff; letter-spacing:-0.4px; line-height:1.12; }}
+  .hero .rule {{ width:52px; height:2px; background:{C_BRASS}; margin:15px 0 13px 0;
+                 border-radius:2px; }}
+  .hero p {{ margin:0; color:#c6d6e6; font-size:13.5px; line-height:1.62; max-width:66em;
+             font-weight:400; }}
+  .hero p b {{ color:#ffffff; font-weight:600; }}
+
+  /* ---------- metric cards ---------- */
+  .kpi {{ background:{C_PANEL}; border:1px solid {C_LINE};
+          border-top:2px solid {C_OXFORD}; border-radius:3px;
+          padding:15px 16px 13px 16px; text-align:center;
+          box-shadow:0 1px 3px rgba(0,33,71,0.05);
+          transition:box-shadow 160ms ease, transform 160ms ease; }}
+  .kpi:hover {{ box-shadow:0 6px 18px -8px rgba(0,33,71,0.28); transform:translateY(-1px); }}
+  .kpi .v {{ font-family:{FONT_DISPLAY}; font-size:31px; font-weight:700;
+             color:{C_OXFORD}; line-height:1.05; font-variant-numeric:tabular-nums; }}
+  .kpi .l {{ font-size:10.5px; color:{C_MUTED}; margin-top:5px; font-weight:600;
+             letter-spacing:0.9px; text-transform:uppercase; }}
+
+  /* ---------- section headings ---------- */
+  .sec {{ display:flex; align-items:baseline; gap:11px; margin:30px 0 13px 0;
+          padding-bottom:8px; border-bottom:1px solid {C_LINE}; }}
+  /* Section numeral uses the darker brass: on the light page background the lighter
+     brass measures 2.9:1, under the 3:1 floor. */
+  .sec .n {{ font-family:{FONT_DISPLAY}; font-size:12.5px; font-weight:700;
+             color:{C_BRASS_DK}; letter-spacing:0.5px; }}
+  .sec h3 {{ margin:0; font-size:17.5px; font-weight:600; color:{C_OXFORD}; }}
+  .sec .sub {{ font-size:12px; color:{C_MUTED}; margin-left:auto; text-align:right; }}
+
+  /* ---------- direction pills ---------- */
+  .pill {{ display:inline-block; padding:3px 11px; border-radius:2px; font-size:11px;
+           font-weight:600; color:white; letter-spacing:0.5px; text-transform:uppercase; }}
+
+  /* ---------- sidebar ---------- */
+  section[data-testid="stSidebar"] {{ background:{C_OXFORD}; border-right:1px solid {C_OXFORD_DK}; }}
+  section[data-testid="stSidebar"] * {{ color:#dbe6f1; }}
+  section[data-testid="stSidebar"] h1,
+  section[data-testid="stSidebar"] h2,
+  section[data-testid="stSidebar"] h3 {{ color:#ffffff; font-size:15px; font-weight:600;
+        letter-spacing:0.3px; }}
+  /* Group label: small caps in brass, so the panel reads as sections not a widget dump. */
+  section[data-testid="stSidebar"] h3 {{ font-size:10.5px; letter-spacing:2px;
+        text-transform:uppercase; color:{C_BRASS}; margin-top:22px; margin-bottom:2px; }}
+  section[data-testid="stSidebar"] label {{ font-size:12px; color:#b8cade; font-weight:500; }}
+  section[data-testid="stSidebar"] hr {{ border-color:rgba(255,255,255,0.13); margin:18px 0; }}
+  /* Inputs sit on a translucent white so they read as fields on the dark panel. */
+  section[data-testid="stSidebar"] [data-baseweb="select"] > div,
+  section[data-testid="stSidebar"] input {{
+        background:rgba(255,255,255,0.07) !important;
+        border-color:rgba(255,255,255,0.2) !important; color:#ffffff !important;
+        border-radius:2px !important; }}
+  section[data-testid="stSidebar"] [data-baseweb="tag"] {{
+        background:{C_BRASS} !important; border-radius:2px !important; color:#1b1206 !important; }}
+
+  /* ---------- tabs ---------- */
+  .stTabs [data-baseweb="tab-list"] {{ gap:2px; border-bottom:1px solid {C_LINE}; }}
+  .stTabs [data-baseweb="tab"] {{ height:41px; padding:0 17px; background:transparent;
+        font-size:13px; font-weight:500; color:{C_MUTED}; border-radius:0; }}
+  .stTabs [aria-selected="true"] {{ color:{C_OXFORD} !important; font-weight:600;
+        border-bottom:2px solid {C_BRASS} !important; }}
+
+  /* ---------- panels, tables, inputs ---------- */
+  [data-testid="stExpander"] {{ border:1px solid {C_LINE}; border-radius:3px;
+        background:{C_PANEL}; box-shadow:0 1px 2px rgba(0,33,71,0.04); }}
+  [data-testid="stExpander"] summary {{ font-size:13px; font-weight:600; color:{C_OXFORD}; }}
+  [data-testid="stDataFrame"] {{ border:1px solid {C_LINE}; border-radius:3px; }}
+  .stButton > button {{ background:{C_OXFORD}; color:#fff; border:0; border-radius:2px;
+        font-weight:600; font-size:13px; padding:9px 20px; letter-spacing:0.3px;
+        transition:background 150ms ease; }}
+  .stButton > button:hover {{ background:{C_OXFORD_LT}; }}
+  div[data-testid="stTextInput"] input {{ border-radius:2px; border:1px solid #cdd8e4;
+        font-size:13.5px; padding:11px 13px; }}
+  div[data-testid="stTextInput"] input:focus {{ border-color:{C_OXFORD};
+        box-shadow:0 0 0 2px rgba(0,33,71,0.10); }}
+  /* Callouts: a single Oxford keyline instead of Streamlit's saturated fills. */
+  div[data-testid="stAlert"] {{ border-radius:2px; border-left:3px solid {C_OXFORD};
+        background:#eef3f9; font-size:13px; }}
+  [data-testid="stCaptionContainer"] {{ color:{C_MUTED}; font-size:11.5px; }}
+  #MainMenu, footer {{ visibility:hidden; }}
 </style>
 """, unsafe_allow_html=True)
 
 df = load_shortlist()
 client = get_client()
 
+def section(num, title, sub=""):
+    """Numbered section heading.
+
+    A dense single-page app needs visible structure; numbering the sections gives the
+    reader a sense of position and lets the demo script refer to "section 3" out loud.
+    """
+    st.markdown(
+        f"<div class='sec'><span class='n'>{num}</span><h3>{title}</h3>"
+        f"<span class='sub'>{sub}</span></div>", unsafe_allow_html=True)
+
+
+# Masthead. The emoji is dropped from the title -- at 35px in a serif face the
+# wordmark carries itself, and the eyebrow line does the categorising instead.
 st.markdown("""
 <div class="hero">
-  <h1>🧬 Perturb2Target — directional drug-target explorer</h1>
-  <p>1,923 <b>directional</b> nominations from genome-scale CD4+ T-cell CRISPRi Perturb-seq —
-  block a driver or activate a brake. Filtering runs on the real data; Claude only translates
-  your words into filters and narrates a gene's own evidence, never inventing a gene or a number.</p>
+  <p class="eyebrow">Directional target nomination &middot; CD4&#8314; T-cell Perturb-seq</p>
+  <h1>Perturb2Target</h1>
+  <div class="rule"></div>
+  <p><b>1,923 directional nominations</b> from a genome-scale CRISPRi screen &mdash; each one a
+  call to <b>block a driver</b> or <b>activate a brake</b>, anchored in human genetics and
+  filtered for druggability. Every figure and filter is computed on the real data; the
+  language model only translates your words into filters and narrates a gene's own
+  evidence row &mdash; it never invents a gene or a number.</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1004,7 +1119,7 @@ with st.sidebar:
                "Settings → Secrets; locally export it or use .streamlit/secrets.toml.")
 
 # natural-language query box
-st.markdown("#### 🔎 Ask in plain language")
+section("I", "Ask in plain language", "natural-language filter translation")
 if client is None:
     with st.expander("💬 Natural-language search is off — how to enable it", expanded=False):
         st.markdown(
@@ -1116,6 +1231,8 @@ if spec.get("disease_groups") or spec.get("disease_contains") or spec.get("ms_an
         f"result means no *anchored* target matched, not that no target is relevant."
     )
 
+section("II", "The shortlist", "filtered nominations and how they distribute")
+
 # KPI cards
 n = len(res)
 n_novel = int((res.novelty_class == "novel_undrugged").sum())
@@ -1165,7 +1282,7 @@ with tab_land:
 # per-gene deep dive: evidence bar + live 3D structure + grounded explanation
 if n:
     st.markdown("---")
-    st.markdown("#### 🔬 Nomination deep-dive")
+    section("III", "Nomination deep-dive", "per-target evidence, structure and mechanism")
     gene = st.selectbox("Select a gene", res.target_gene.tolist())
     row = res[res.target_gene == gene].iloc[0]
     dircol = C_DRIVER if row.direction == "driver_antagonize" else C_BRAKE
@@ -1234,7 +1351,7 @@ if n:
     # signature-response heatmap (#1) — the mechanism reveal
     sigdf = load_signature_response()
     if sigdf is not None and gene in set(sigdf.target_gene):
-        st.markdown("##### Why this call? — signature-gene response")
+        st.markdown("<div class='sec' style='margin-top:22px'><span class='n'>&mdash;</span><h3 style='font-size:15px'>Why this call? Signature-gene response</h3></div>", unsafe_allow_html=True)
         hc1, hc2 = st.columns([3, 1])
         with hc2:
             animate_hm = st.checkbox("▶ Animate across conditions", key="hm_anim",
