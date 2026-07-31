@@ -73,6 +73,28 @@ def load_map_by_condition():
     return pd.read_parquet(fp) if os.path.exists(fp) else None
 
 @st.cache_data
+def load_ms_projection():
+    """KD x context effects placed on the patient CD4 manifold (7,874 rows).
+
+    Each row is one knockdown in one activation context, positioned where its
+    transcriptional effect lands in the integrated patient UMAP, with the MS reversal
+    score attached. Produced by the MS generalization analysis.
+    """
+    fp = os.path.join(HERE, "ms_projection_app.parquet")
+    return pd.read_parquet(fp) if os.path.exists(fp) else None
+
+@st.cache_data
+def load_ms_background():
+    """Downsampled patient-cell UMAP coordinates -- the grey cloud behind the overlay.
+
+    25,000 of 188,422 cells from the integrated CD4 atlas. Downsampled because the
+    cloud only conveys the manifold's shape, and a browser scatter of 188k points is
+    slow to no benefit.
+    """
+    fp = os.path.join(HERE, "ms_manifold_background.parquet")
+    return pd.read_parquet(fp) if os.path.exists(fp) else None
+
+@st.cache_data
 def load_ms_nominations():
     fp = os.path.join(HERE, "ms_nominations_shortlist.csv")
     return pd.read_csv(fp) if os.path.exists(fp) else None
@@ -803,6 +825,60 @@ def score_buildup(row):
                                                      "mode": "immediate"}])])])
     return fig
 
+def ms_manifold_overlay(proj, bg, context="All", top_n=20):
+    """Interactive version of the perturbation-overlay figure.
+
+    Panel a of the static figure showed every KDxcontext coloured by MS reversal score
+    over the patient cloud; panel b labelled the top reversing knockdowns. Here both are
+    one figure with the top-N called out, and the context is selectable -- the static
+    figure had to pool contexts, which hid the fact that a knockdown's position moves
+    as the T cell activates.
+    """
+    import plotly.graph_objects as go
+    d = proj if context == "All" else proj[proj.context == context]
+    top = d.nlargest(top_n, "reversal_score_MS")
+    fig = go.Figure()
+    if bg is not None:
+        fig.add_trace(go.Scattergl(
+            x=bg.umap_x, y=bg.umap_y, mode="markers", name="patient CD4 cells",
+            marker=dict(size=2.4, color="#d3dae2", opacity=0.55), hoverinfo="skip"))
+    # Diverging scale centred on zero: sign is the whole point (reversing vs worsening),
+    # so the midpoint must sit at 0 rather than at the data median.
+    lim = float(max(abs(d.reversal_score_MS.min()), abs(d.reversal_score_MS.max())))
+    fig.add_trace(go.Scattergl(
+        x=d.umap_x, y=d.umap_y, mode="markers", name="knockdown x context",
+        marker=dict(size=5.5, color=d.reversal_score_MS, colorscale="RdBu_r",
+                    cmin=-lim, cmax=lim, showscale=True,
+                    colorbar=dict(title=dict(text="MS reversal<br>score", side="right"),
+                                  thickness=12, len=0.62, x=1.015,
+                                  tickfont=dict(size=9)),
+                    line=dict(width=0.3, color="rgba(255,255,255,0.5)")),
+        text=d.kd_gene, customdata=d[["context", "n_de_genes"]].values,
+        hovertemplate=("<b>%{text}</b><br>%{customdata[0]}<br>"
+                       "reversal %{marker.color:.4f}<br>"
+                       "%{customdata[1]} DE genes<extra></extra>")))
+    fig.add_trace(go.Scattergl(
+        x=top.umap_x, y=top.umap_y, mode="markers+text", name=f"top {top_n} reversing",
+        marker=dict(size=11, color="rgba(0,0,0,0)",
+                    line=dict(width=1.8, color=C_OXFORD)),
+        text=top.kd_gene, textposition="top center",
+        textfont=dict(size=9, color=C_OXFORD, family=FONT_UI),
+        hovertemplate="<b>%{text}</b><br>top reversing<extra></extra>"))
+    fig.update_layout(
+        template="plotly_white", paper_bgcolor=C_PANEL, plot_bgcolor=C_PANEL,
+        font=dict(color=C_INK, family=FONT_UI), height=560,
+        margin=dict(l=52, r=90, t=62, b=48),
+        title=dict(text=(f"Candidate MS-reversing knockdowns on the patient CD4 manifold"
+                         f"<br><sup>{len(d):,} knockdown x context effects &middot; "
+                         f"{context.lower() if context != 'All' else 'all contexts'} &middot; "
+                         f"grey = 25,000 patient cells</sup>"),
+                   font=dict(size=15, color=C_OXFORD), x=0.01, xanchor="left"),
+        xaxis=dict(title="UMAP1", showgrid=False, zeroline=False),
+        yaxis=dict(title="UMAP2", showgrid=False, zeroline=False),
+        legend=dict(orientation="h", y=-0.13, x=0.5, xanchor="center",
+                    font=dict(size=10)))
+    return fig
+
 def condition_slider_map(mapd, genes=None):
     """#2 Context dynamics: directional map animated across Rest → Stim8hr → Stim48hr."""
     import plotly.graph_objects as go
@@ -1069,7 +1145,7 @@ st.markdown("""
   call to <b>block a driver</b> or <b>activate a brake</b>, anchored in human genetics and
   filtered for druggability. Every figure and filter is computed on the real data; the
   language model only translates your words into filters and narrates a gene's own
-  evidence row &mdash; it never invents a gene or a number.</p>
+  evidence row &mdash.</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1252,9 +1328,9 @@ st.markdown("")
 
 # ------- hero: tabbed views (static map / animated context / landscape sunburst) -------
 mapd = load_map_by_condition()
-tab_map, tab_ctx, tab_funnel, tab_land, tab_ms = st.tabs(
+tab_map, tab_ctx, tab_funnel, tab_land, tab_ms, tab_overlay = st.tabs(
     ["🗺 Directional map", "⏱ Context dynamics", "🔻 Method funnel", "🌅 Landscape",
-     "🧭 MS generalization"])
+     "🧭 MS generalization", "🧬 Patient manifold"])
 with tab_map:
     left, right = st.columns([1.15, 1])
     with left:
@@ -1455,6 +1531,39 @@ with tab_ms:
             "pleiotropic housekeeping hubs; directional scoring intersected with genetics recovers "
             "specific, druggable, correctly-directed targets. The framework applies to any "
             "CD4-T-cell-mediated disease with a definable signature.", icon="🧭")
+
+with tab_overlay:
+    _proj = load_ms_projection()
+    _bg = load_ms_background()
+    if _proj is None:
+        st.info("Projection data (ms_projection_app.parquet) not found next to app.py.")
+    else:
+        _c1, _c2 = st.columns([1, 3])
+        with _c1:
+            _ctx = st.selectbox("Activation context", ["All", "Rest", "Stim8hr", "Stim48hr"],
+                                key="ovl_ctx",
+                                help="The static figure pooled all three contexts. Selecting one "
+                                     "shows that a knockdown's position on the manifold moves as "
+                                     "the T cell activates.")
+            _topn = st.slider("Label top N reversing", 5, 40, 20, 5, key="ovl_top")
+        st.plotly_chart(ms_manifold_overlay(_proj, _bg, _ctx, _topn),
+                        width="stretch", config={"displayModeBar": False})
+        st.caption(
+            "Each coloured point is one knockdown in one activation context, placed where its "
+            "transcriptional effect lands in the integrated patient CD4 manifold (188,422 cells, "
+            "25,000 drawn as the grey cloud). Red = the knockdown moves cells against the MS "
+            "disease direction (candidate therapeutic); blue = with it. Ringed points are the "
+            "top reversing knockdowns for the selected context."
+        )
+        if _bg is None:
+            st.caption("Patient-cell background not found — showing knockdowns only.")
+        st.info(
+            "**Read this panel with the caveat from the MS generalization tab.** Raw reversal "
+            "score is confounded by how many genes a knockdown perturbs: broad knockdowns score "
+            "well simply by moving cells a long way. The footprint-matched correction reduces the "
+            "confound correlation from −0.33 to −0.07, and the directional result quoted in the "
+            "paper uses the corrected score, not the raw one shown here."
+        )
 
 st.markdown("---")
 st.caption("All nominations are computational hypotheses; see PROSPECTIVE_VALIDATION.md for the "
