@@ -1341,12 +1341,43 @@ st.markdown(f"""
         margin-top:24px; margin-bottom:4px; }}
   section[data-testid="stSidebar"] label {{ font-size:12.5px; color:#b8cade; font-weight:500; }}
   section[data-testid="stSidebar"] hr {{ border-color:rgba(255,255,255,0.13); margin:18px 0; }}
-  /* Inputs sit on a translucent white so they read as fields on the dark panel. */
+  /* Filter fields are LIGHT with Oxford-blue text. They were a translucent dark fill with
+     white text, which made typed text and selected values invisible: the multiselect search
+     input and the BaseWeb dropdown popover both render on a white surface, so white-on-white.
+     Recolouring the text alone is not enough -- Oxford text on the old dark fill measures
+     1.14:1. The fill has to be light for the text to read, so field and popover now match. */
   section[data-testid="stSidebar"] [data-baseweb="select"] > div,
-  section[data-testid="stSidebar"] input {{
-        background:rgba(255,255,255,0.07) !important;
-        border-color:rgba(255,255,255,0.2) !important; color:#ffffff !important;
+  section[data-testid="stSidebar"] [data-baseweb="input"],
+  section[data-testid="stSidebar"] input,
+  section[data-testid="stSidebar"] textarea {{
+        background:#ffffff !important;
+        border-color:rgba(255,255,255,0.55) !important; color:{C_OXFORD} !important;
         border-radius:2px !important; }}
+  /* The `* {{ color }}` sidebar rule above would otherwise repaint the value/search text
+     inside the control, so name those elements explicitly. */
+  section[data-testid="stSidebar"] [data-baseweb="select"] input,
+  section[data-testid="stSidebar"] [data-baseweb="select"] div[class*="Value"],
+  section[data-testid="stSidebar"] [data-baseweb="select"] div[class*="value"],
+  section[data-testid="stSidebar"] input,
+  section[data-testid="stSidebar"] [data-testid="stNumberInputField"] {{
+        color:{C_OXFORD} !important; -webkit-text-fill-color:{C_OXFORD} !important; }}
+  section[data-testid="stSidebar"] [data-baseweb="select"] svg {{ fill:{C_OXFORD_LT} !important; }}
+  section[data-testid="stSidebar"] ::placeholder {{
+        color:#5a6b7b !important; -webkit-text-fill-color:#5a6b7b !important; opacity:1 !important; }}
+  section[data-testid="stSidebar"] [data-testid="stNumberInput"] button {{
+        background:#eef3f9 !important; color:{C_OXFORD} !important; }}
+  section[data-testid="stSidebar"] [data-testid="stNumberInput"] button svg {{ fill:{C_OXFORD} !important; }}
+  /* Dropdown menus render in a portal at document root, not inside the sidebar, so these
+     are global rules -- a sidebar-scoped selector would never reach them. */
+  div[data-baseweb="popover"] li, div[data-baseweb="popover"] [role="option"],
+  ul[role="listbox"] li, div[role="listbox"] [role="option"] {{
+        color:{C_OXFORD} !important; -webkit-text-fill-color:{C_OXFORD} !important;
+        background:#ffffff !important; font-size:12.5px !important; }}
+  div[data-baseweb="popover"] li:hover, div[data-baseweb="popover"] [role="option"]:hover,
+  ul[role="listbox"] li[aria-selected="true"], div[role="listbox"] [role="option"][aria-selected="true"] {{
+        background:#eef3f9 !important; color:{C_OXFORD} !important; }}
+  div[data-baseweb="popover"] ul, div[data-baseweb="popover"] div[role="listbox"] {{
+        background:#ffffff !important; border:1px solid #cdd8e4 !important; }}
   section[data-testid="stSidebar"] [data-baseweb="tag"] {{
         background:{C_BRASS} !important; border-radius:2px !important; color:#1b1206 !important; }}
   /* ---------- tabs ---------- */
@@ -1436,9 +1467,11 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("### Direction & biology")
-    dsel = st.selectbox("Direction", ["(any)", "driver_antagonize (block a driver)", "brake_agonize (activate a brake)"])
-    if dsel.startswith("driver"): spec["direction"] = "driver_antagonize"
-    elif dsel.startswith("brake"): spec["direction"] = "brake_agonize"
+    # Options read from DIRECTION_LABEL so the filter, the table and the figure legends
+    # cannot drift apart. Matching is by dict lookup, not string prefix.
+    _dopts = {DIRECTION_LABEL[k]: k for k in ("driver_antagonize", "brake_agonize")}
+    dsel = st.selectbox("Direction", ["(any)"] + list(_dopts))
+    if dsel in _dopts: spec["direction"] = _dopts[dsel]
     classes = st.multiselect("Protein class", sorted(df.primary_class.dropna().unique()))
     if classes: spec["primary_class"] = classes
     tiers = st.multiselect("Genetics tier", ["strong", "moderate", "weak"])
