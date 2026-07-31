@@ -783,7 +783,10 @@ def score_buildup(row):
                                  hovertemplate=f"{labs[key]}: {val:.3f}<extra></extra>"))
             base += val
         return traces
-    fig = go.Figure(data=frame_traces(0),
+    # Initialise with the FULL stack so the bar is populated on load -- the score is the
+    # point of the panel, and an empty bar until someone finds the button reads as broken.
+    # The frames are kept so the build-up can still be replayed as an explanation.
+    fig = go.Figure(data=frame_traces(len(keys)),
                     frames=[go.Frame(data=frame_traces(k), name=str(k)) for k in range(1, len(keys) + 1)])
     total = sum(contrib)
     fig.update_layout(
@@ -794,9 +797,10 @@ def score_buildup(row):
         xaxis=dict(range=[0, 1.02], gridcolor="#e3e8ef"), yaxis=dict(showticklabels=False),
         legend=dict(orientation="h", y=-0.4, x=0.5, xanchor="center"),
         updatemenus=[dict(type="buttons", showactive=False, x=0.98, y=1.5, xanchor="right",
-                          buttons=[dict(label="▶ Build", method="animate",
+                          buttons=[dict(label="↻ Replay build", method="animate",
                                         args=[None, {"frame": {"duration": 650, "redraw": True},
-                                                     "fromcurrent": True}])])])
+                                                     "fromcurrent": False,
+                                                     "mode": "immediate"}])])])
     return fig
 
 def condition_slider_map(mapd, genes=None):
@@ -995,12 +999,15 @@ st.markdown(f"""
   section[data-testid="stSidebar"] * {{ color:#dbe6f1; }}
   section[data-testid="stSidebar"] h1,
   section[data-testid="stSidebar"] h2,
-  section[data-testid="stSidebar"] h3 {{ color:#ffffff; font-size:15px; font-weight:600;
+  section[data-testid="stSidebar"] h3 {{ color:#ffffff; font-size:16px; font-weight:600;
         letter-spacing:0.3px; }}
-  /* Group label: small caps in brass, so the panel reads as sections not a widget dump. */
-  section[data-testid="stSidebar"] h3 {{ font-size:10.5px; letter-spacing:2px;
-        text-transform:uppercase; color:{C_BRASS}; margin-top:22px; margin-bottom:2px; }}
-  section[data-testid="stSidebar"] label {{ font-size:12px; color:#b8cade; font-weight:500; }}
+  /* Group label: small caps in brass, so the panel reads as sections not a widget dump.
+     Sized at 13px -- 10.5px uppercase was legible up close but too quiet as a heading,
+     and it has to out-rank the 12.5px widget labels below it to read as a group title. */
+  section[data-testid="stSidebar"] h3 {{ font-size:13px; letter-spacing:1.4px;
+        font-weight:700; text-transform:uppercase; color:{C_BRASS};
+        margin-top:24px; margin-bottom:4px; }}
+  section[data-testid="stSidebar"] label {{ font-size:12.5px; color:#b8cade; font-weight:500; }}
   section[data-testid="stSidebar"] hr {{ border-color:rgba(255,255,255,0.13); margin:18px 0; }}
   /* Inputs sit on a translucent white so they read as fields on the dark panel. */
   section[data-testid="stSidebar"] [data-baseweb="select"] > div,
@@ -1290,9 +1297,11 @@ if n:
     # gauges row (#6)
     st.plotly_chart(gauge_row(row), width="stretch", config={"displayModeBar": False})
 
-    # score buildup (#4) — components animate in as a growing stacked bar
+    # score buildup (#4) — shown fully populated; the animation is an optional replay
     st.plotly_chart(score_buildup(row), width="stretch", config={"displayModeBar": False})
-    st.caption("Press ▶ Build — the four weighted components stack up to the integrated score.")
+    st.caption("The four weighted components (causal 0.34, genetics 0.30, druggability 0.22, "
+               "novelty 0.14) sum to the integrated score. Press ↻ Replay build to watch them "
+               "stack up one at a time.")
 
     cA, cB, cC = st.columns([1, 1, 1])
     with cA:
