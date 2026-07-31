@@ -1038,7 +1038,7 @@ nlq = st.text_input(
     "e.g. 'brake-agonize kinases with strong asthma genetics and a clean patent space'",
     disabled=(client is None), label_visibility="collapsed")
 
-with st.expander("💡 Example questions you can ask", expanded=(client is not None and not nlq)):
+with st.expander("💡 Example questions you can ask", expanded=False):
     st.caption(
         "The parser understands four things at once: **direction** (block a driver / "
         "activate a brake), **disease** (19 groups, abbreviations fine), **protein class** "
