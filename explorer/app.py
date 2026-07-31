@@ -31,8 +31,22 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CSV = os.path.join(HERE, "target_shortlist.csv")
 
 # brand palette
-C_DRIVER = "#c1272d"   # driver_antagonize (block) — red
-C_BRAKE = "#1a7f9e"    # brake_agonize (activate) — teal
+# Directional call. These two encode the therapeutic direction and are NOT part of the
+# Oxford/brass brand palette — do not restyle them for visual harmony.
+# ANTAGONIZE (block a driver) = Cambridge red; AGONIZE (activate a brake) = green.
+# Green is Cambridge #55a51c darkened to 75% so it clears WCAG AA (4.76:1 on the app
+# background); the pure brand green measures 2.88:1 and fails even the large-text floor.
+C_DRIVER = "#d6083b"   # driver_antagonize — antagonize / block — Cambridge red
+C_BRAKE = "#407c15"    # brake_agonize — agonize / activate — Cambridge green (AA-safe)
+# Agreement colours for the agentic panel. Deliberately NOT the direction colours: with
+# red now meaning "brake", reusing it for "disagrees" would read as an error flag, and
+# reusing green for "agrees" would collide with the driver call.
+C_AGREE = "#01305f"    # navy — reasoning layer agrees with the screen
+# "our method" vs "external baseline" in the benchmark is a provenance distinction,
+# not a therapeutic direction — it gets its own colour so the swap cannot desync it.
+C_OURS = "#01305f"     # navy — this method, in baseline comparisons
+C_DISAGREE = "#8c6608"  # dark amber — disagrees (interesting, not wrong);
+                        # darker than brand amber so white pill text clears AA
 C_BG = "#f5f7fa"       # app background (light)
 C_PANEL = "#ffffff"    # plot / card background
 C_INK = "#1b2733"      # primary text
@@ -55,6 +69,60 @@ FONT_DISPLAY = ("'Source Serif 4', 'Iowan Old Style', 'Palatino Linotype', "
 C_STRUCT_BG = "0xeef2f7"  # 3D viewer background (light)
 
 # ----------------------------------------------------------------------------- data
+# ---------- display labels ----------
+# One source of truth for how a direction is worded in tables and figures. The stored
+# values stay `driver_antagonize` / `brake_agonize`; only the presentation changes.
+DIRECTION_LABEL = {
+    "driver_antagonize": "Antagonize (Block Driver)",
+    "brake_agonize": "Agonize (Activate Brake)",
+}
+
+# Column titles for user-facing tables: Camel Case words, no underscores.
+COLUMN_TITLE = {
+    "rank": "Rank",
+    "target_gene": "Target Gene",
+    "direction": "Direction",
+    "integrated_score": "Integrated Score",
+    "genetics_tier": "Genetics Tier",
+    "ot_top_disease": "Top Disease",
+    "suggested_modality": "Suggested Modality",
+    "novelty_class": "Novelty Class",
+    "sym": "Gene",
+    "context": "Context",
+    "emp_z": "Empirical Z",
+    "primary_class": "Primary Class",
+    "druggable": "Druggable",
+    "gene": "Gene",
+    "drug": "Drug",
+    "drug_action": "Drug Action",
+    "our_call": "Our Call",
+    "concordant": "Concordant",
+    "reversal_score_MS": "MS Reversal Score",
+    "n_de_genes": "DE Genes",
+    "kd_gene": "Knockdown Gene",
+    "axis": "Method",
+    "group": "Provenance",
+    "auroc": "AUROC",
+    "auroc_lo": "AUROC Low",
+    "auroc_hi": "AUROC High",
+    "ap": "AP",
+    "n_positives": "Positives",
+    "n_universe": "Universe",
+}
+
+def pretty_col(c):
+    """Title for a column: mapped if known, else Camel Case with underscores removed."""
+    if c in COLUMN_TITLE:
+        return COLUMN_TITLE[c]
+    return " ".join(w.capitalize() if not w.isupper() else w for w in str(c).split("_"))
+
+def for_display(frame, cols=None):
+    """Table-ready copy: direction values reworded, column titles Camel Case."""
+    d = frame[cols].copy() if cols is not None else frame.copy()
+    if "direction" in d.columns:
+        d["direction"] = d["direction"].map(lambda v: DIRECTION_LABEL.get(v, v))
+    return d.rename(columns={c: pretty_col(c) for c in d.columns})
+
 @st.cache_data
 def load_shortlist():
     df = pd.read_csv(CSV)
@@ -637,8 +705,8 @@ def directional_map(dfp, highlight=None):
     """Hero scatter: causal strength (x) vs genetics (y), size=integrated, color=direction."""
     import plotly.graph_objects as go
     fig = go.Figure()
-    for dirval, col, name in [("driver_antagonize", C_DRIVER, "Driver → antagonize (block)"),
-                              ("brake_agonize", C_BRAKE, "Brake → agonize (activate)")]:
+    for dirval, col, name in [("driver_antagonize", C_DRIVER, "Antagonize (Block Driver)"),
+                              ("brake_agonize", C_BRAKE, "Agonize (Activate Brake)")]:
         d = dfp[dfp.direction == dirval]
         fig.add_trace(go.Scatter(
             x=d.causal_component, y=d.genetics_component, mode="markers",
@@ -769,7 +837,7 @@ def funnel_animated(stages):
     import plotly.graph_objects as go
     labels = [s[0] for s in stages]
     counts = [s[1] for s in stages]
-    palette = ["#9fb3c8", C_BRAKE, "#2b8fb0", C_DRIVER, "#a8322f", C_ACCENT if "C_ACCENT" in globals() else "#e08a1e"]
+    palette = ["#9fb3c8", "#7f9cba", "#5f86ab", "#40709c", "#21598d", "#01305f"]
     palette = palette[:len(stages)]
     # frames: reveal one more bar each step
     def frame_bars(k):
@@ -805,8 +873,8 @@ def score_buildup(row):
          "drug_component": 0.22, "novelty_component": 0.14}
     labs = {"causal_component": "Causal", "genetics_component": "Genetics",
             "drug_component": "Druggability", "novelty_component": "Novelty"}
-    cols = {"causal_component": C_DRIVER, "genetics_component": "#2b8fb0",
-            "drug_component": C_BRAKE, "novelty_component": "#8b9aa8"}
+    cols = {"causal_component": "#01305f", "genetics_component": "#2b8fb0",
+            "drug_component": "#b08d57", "novelty_component": "#8b9aa8"}
     keys = list(W)
     contrib = [float(getattr(row, k)) * W[k] for k in keys]
     dircol = C_DRIVER if row.direction == "driver_antagonize" else C_BRAKE
@@ -850,7 +918,7 @@ def multibaseline_fig(mb):
     """
     import plotly.graph_objects as go
     d = mb.sort_values("auroc")
-    cols = [C_DRIVER if g.startswith("ours") else "#9fb3c8" for g in d.group]
+    cols = [C_OURS if g.startswith("ours") else "#9fb3c8" for g in d.group]
     fig = go.Figure(go.Bar(
         x=d.auroc, y=d.axis, orientation="h", marker=dict(color=cols),
         error_x=dict(type="data", symmetric=False,
@@ -880,7 +948,7 @@ def multibaseline_fig(mb):
         font=dict(color=C_INK, family=FONT_UI), height=340,
         margin=dict(l=10, r=80, t=64, b=46),
         title=dict(text=("Recovering known drug targets: ours vs external baselines"
-                         "<br><sup>red = this method &middot; network centrality and Open Targets "
+                         "<br><sup>navy = this method &middot; network centrality and Open Targets "
                          "genetics both score higher</sup>"),
                    font=dict(size=14, color=C_OXFORD), x=0.01, xanchor="left"),
         xaxis=dict(title="AUROC (19 known targets among 1,923)", range=[0.35, 1.09],
@@ -957,7 +1025,7 @@ def agentic_layers_fig(call):
     import plotly.graph_objects as go
     n = int(call["layers_concordant"])
     agree = str(call["agrees_with_screen"])
-    col = {"yes": C_BRAKE, "no": C_DRIVER, "uncertain": "#8b9aa8"}.get(agree, "#8b9aa8")
+    col = {"yes": C_AGREE, "no": C_DISAGREE, "uncertain": "#8b9aa8"}.get(agree, "#8b9aa8")
     fig = go.Figure()
     for i in range(4):
         filled = i < n
@@ -980,7 +1048,7 @@ def agentic_overview_fig(ag):
     import plotly.graph_objects as go
     order = ["high", "medium", "low"]
     agree_order = ["yes", "no", "uncertain"]
-    cols = {"yes": C_BRAKE, "no": C_DRIVER, "uncertain": "#8b9aa8"}
+    cols = {"yes": C_AGREE, "no": C_DISAGREE, "uncertain": "#8b9aa8"}
     labs = {"yes": "agrees with screen", "no": "disagrees", "uncertain": "uncertain"}
     fig = go.Figure()
     for a in agree_order:
@@ -1070,7 +1138,7 @@ def condition_slider_map(mapd, genes=None):
             dd = d[d.direction == dirval]
             traces.append(go.Scatter(
                 x=dd[f"emp_z__{cond}"], y=dd["genetics_component"], mode="markers",
-                name=("Driver → antagonize" if dirval == "driver_antagonize" else "Brake → agonize"),
+                name=DIRECTION_LABEL[dirval],
                 marker=dict(size=6 + 20 * dd.integrated_score.clip(0, 1), color=col,
                             opacity=0.72, line=dict(width=0.5, color="#5a6b7b")),
                 text=dd.target_gene,
@@ -1111,15 +1179,15 @@ def disease_sunburst(dfp):
     import plotly.express as px
     d = dfp.copy()
     d["disease"] = d.ot_top_disease.fillna("(none)").str.slice(0, 28)
-    d["dir_lbl"] = d.direction.map({"driver_antagonize": "Antagonize drivers",
-                                    "brake_agonize": "Agonize brakes"})
+    d["dir_lbl"] = d.direction.map(DIRECTION_LABEL)
     d["cls"] = d.primary_class.fillna("other")
     # cap to keep the sunburst legible
     top_disease = d.disease.value_counts().nlargest(14).index
     d = d[d.disease.isin(top_disease)]
     fig = px.sunburst(d, path=["dir_lbl", "cls", "disease"],
                       color="dir_lbl",
-                      color_discrete_map={"Antagonize drivers": C_DRIVER, "Agonize brakes": C_BRAKE})
+                      color_discrete_map={DIRECTION_LABEL["driver_antagonize"]: C_DRIVER,
+                                            DIRECTION_LABEL["brake_agonize"]: C_BRAKE})
     fig.update_layout(template="plotly_white", paper_bgcolor=C_PANEL, font=dict(color=C_INK, family=FONT_UI),
                       height=480, margin=dict(l=10, r=10, t=50, b=10),
                       title=dict(text="Where the nominations sit — direction → class → disease",
@@ -1136,8 +1204,8 @@ def query_trace_map(dfp, match_genes):
     match = set(match_genes)
     def traces(revealed):
         out = []
-        for dirval, col, name in [("driver_antagonize", C_DRIVER, "Driver → antagonize"),
-                                  ("brake_agonize", C_BRAKE, "Brake → agonize")]:
+        for dirval, col, name in [("driver_antagonize", C_DRIVER, DIRECTION_LABEL["driver_antagonize"]),
+                                  ("brake_agonize", C_BRAKE, DIRECTION_LABEL["brake_agonize"])]:
             d = dfp[dfp.direction == dirval]
             if revealed:
                 op = [0.92 if g in match else 0.06 for g in d.target_gene]
@@ -1531,7 +1599,8 @@ with tab_map:
         st.markdown(f"**{n} matching nominations**")
         cols = ["rank", "target_gene", "direction", "integrated_score", "genetics_tier",
                 "ot_top_disease", "suggested_modality", "novelty_class"]
-        st.dataframe(res[cols].reset_index(drop=True), width="stretch", height=420)
+        st.dataframe(for_display(res, cols).reset_index(drop=True),
+                     width="stretch", height=420)
 with tab_ctx:
     if mapd is not None:
         st.plotly_chart(condition_slider_map(mapd, genes=set(res.target_gene)),
@@ -1628,8 +1697,8 @@ if n:
     if _ag is not None and gene in set(_ag.gene):
         _call = _ag[_ag.gene == gene].iloc[0]
         _agree = str(_call["agrees_with_screen"])
-        _badge = {"yes": ("agrees with the screen", C_BRAKE),
-                  "no": ("disagrees with the screen", C_DRIVER),
+        _badge = {"yes": ("agrees with the screen", C_AGREE),
+                  "no": ("disagrees with the screen", C_DISAGREE),
                   "uncertain": ("uncertain", "#8b9aa8")}.get(_agree, ("uncertain", "#8b9aa8"))
         st.markdown(
             "<div class='sec' style='margin-top:22px'><span class='n'>&mdash;</span>"
@@ -1757,7 +1826,8 @@ with tab_ms:
             show = ms_nom[ms_nom.ms_nomination].copy() if "ms_nomination" in ms_nom else ms_nom
             cols = [c for c in ["sym", "context", "emp_z", "genetics_tier", "primary_class", "druggable"]
                     if c in show.columns]
-            st.dataframe(show[cols].round(2).reset_index(drop=True), width="stretch", height=340)
+            st.dataframe(for_display(show.round(2), cols).reset_index(drop=True),
+                     width="stretch", height=340)
             st.caption("Druggable genetic-anchored leads: **IL2RB, TYK2, IL2RA, IL7R, TNFRSF1A** — "
                        "TYK2 is a validated approved-drug-class target.")
     with cR:
@@ -1765,8 +1835,8 @@ with tab_ms:
         if ms_cc is not None:
             ccols = [c for c in ["gene", "drug", "drug_action", "our_call", "concordant"]
                      if c in ms_cc.columns]
-            st.dataframe(ms_cc[ms_cc.concordant.notna()][ccols].reset_index(drop=True)
-                         if "concordant" in ms_cc else ms_cc[ccols],
+            st.dataframe(for_display(ms_cc[ms_cc.concordant.notna()], ccols).reset_index(drop=True)
+                         if "concordant" in ms_cc else for_display(ms_cc, ccols),
                          width="stretch", height=340)
             st.caption("Natalizumab/ITGA4 · fingolimod/S1PR1 · alemtuzumab/CD52 · TYK2 inhibitors · "
                        "anti-IL2RA — the corrected direction calls all five as *antagonize*.")
@@ -1875,8 +1945,8 @@ with tab_bench:
         )
         with st.expander("Full numbers"):
             st.dataframe(
-                _mb[["axis", "group", "auroc", "auroc_lo", "auroc_hi", "ap",
-                     "n_positives", "n_universe"]].reset_index(drop=True),
+                for_display(_mb, ["axis", "group", "auroc", "auroc_lo", "auroc_hi", "ap",
+                                  "n_positives", "n_universe"]).reset_index(drop=True),
                 width="stretch")
 
 st.markdown("---")
