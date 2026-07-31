@@ -935,6 +935,10 @@ def gauge_row(row):
 
 # --------------------------------------------------------------------------- UI
 st.set_page_config(page_title="Perturb2Target Explorer", layout="wide", page_icon="🧬")
+# NOTE ON THE STYLE BLOCK BELOW: it must contain NO blank lines. Streamlit renders
+# markdown, and in markdown a blank line terminates a raw-HTML block -- everything after
+# the first blank line inside <style> gets emitted as visible text instead of being applied.
+# Use the /* ---------- */ comments as section separators, never an empty line.
 st.markdown(f"""
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
@@ -946,7 +950,6 @@ st.markdown(f"""
   h1,h2,h3,h4,h5 {{ font-family:{FONT_UI}; color:{C_OXFORD}; letter-spacing:-0.15px; }}
   a {{ color:{C_OXFORD_LT}; text-decoration:none; border-bottom:1px solid rgba(1,48,95,0.25); }}
   a:hover {{ border-bottom-color:{C_BRASS}; }}
-
   /* ---------- masthead ---------- */
   .hero {{ background:linear-gradient(118deg,{C_OXFORD} 0%,{C_OXFORD_LT} 62%,#013b73 100%);
            border-radius:4px; padding:30px 34px 28px 34px; margin-bottom:20px;
@@ -964,7 +967,6 @@ st.markdown(f"""
   .hero p {{ margin:0; color:#c6d6e6; font-size:13.5px; line-height:1.62; max-width:66em;
              font-weight:400; }}
   .hero p b {{ color:#ffffff; font-weight:600; }}
-
   /* ---------- metric cards ---------- */
   .kpi {{ background:{C_PANEL}; border:1px solid {C_LINE};
           border-top:2px solid {C_OXFORD}; border-radius:3px;
@@ -976,7 +978,6 @@ st.markdown(f"""
              color:{C_OXFORD}; line-height:1.05; font-variant-numeric:tabular-nums; }}
   .kpi .l {{ font-size:10.5px; color:{C_MUTED}; margin-top:5px; font-weight:600;
              letter-spacing:0.9px; text-transform:uppercase; }}
-
   /* ---------- section headings ---------- */
   .sec {{ display:flex; align-items:baseline; gap:11px; margin:30px 0 13px 0;
           padding-bottom:8px; border-bottom:1px solid {C_LINE}; }}
@@ -986,11 +987,9 @@ st.markdown(f"""
              color:{C_BRASS_DK}; letter-spacing:0.5px; }}
   .sec h3 {{ margin:0; font-size:17.5px; font-weight:600; color:{C_OXFORD}; }}
   .sec .sub {{ font-size:12px; color:{C_MUTED}; margin-left:auto; text-align:right; }}
-
   /* ---------- direction pills ---------- */
   .pill {{ display:inline-block; padding:3px 11px; border-radius:2px; font-size:11px;
            font-weight:600; color:white; letter-spacing:0.5px; text-transform:uppercase; }}
-
   /* ---------- sidebar ---------- */
   section[data-testid="stSidebar"] {{ background:{C_OXFORD}; border-right:1px solid {C_OXFORD_DK}; }}
   section[data-testid="stSidebar"] * {{ color:#dbe6f1; }}
@@ -1011,14 +1010,12 @@ st.markdown(f"""
         border-radius:2px !important; }}
   section[data-testid="stSidebar"] [data-baseweb="tag"] {{
         background:{C_BRASS} !important; border-radius:2px !important; color:#1b1206 !important; }}
-
   /* ---------- tabs ---------- */
   .stTabs [data-baseweb="tab-list"] {{ gap:2px; border-bottom:1px solid {C_LINE}; }}
   .stTabs [data-baseweb="tab"] {{ height:41px; padding:0 17px; background:transparent;
         font-size:13px; font-weight:500; color:{C_MUTED}; border-radius:0; }}
   .stTabs [aria-selected="true"] {{ color:{C_OXFORD} !important; font-weight:600;
         border-bottom:2px solid {C_BRASS} !important; }}
-
   /* ---------- panels, tables, inputs ---------- */
   [data-testid="stExpander"] {{ border:1px solid {C_LINE}; border-radius:3px;
         background:{C_PANEL}; box-shadow:0 1px 2px rgba(0,33,71,0.04); }}
