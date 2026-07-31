@@ -842,7 +842,7 @@ def score_buildup(row):
     return fig
 
 def multibaseline_fig(mb):
-    """Honest benchmarking: our scores against three external baselines, with CIs.
+    """Our scores against three external baselines, with bootstrap CIs.
 
     Bars are ordered by AUROC so the reader sees immediately that two baselines beat the
     full integrated score. Error bars are the bootstrap CIs already in the results table --
@@ -857,14 +857,23 @@ def multibaseline_fig(mb):
                      array=(d.auroc_hi - d.auroc).tolist(),
                      arrayminus=(d.auroc - d.auroc_lo).tolist(),
                      color="#5a6b7b", thickness=1.2, width=4),
-        text=[f"{v:.3f}" for v in d.auroc], textposition="outside", cliponaxis=False,
         customdata=d[["auroc_lo", "auroc_hi", "ap", "n_positives"]].values,
         hovertemplate=("<b>%{y}</b><br>AUROC %{x:.3f} "
                        "(95%% CI %{customdata[0]:.3f}&ndash;%{customdata[1]:.3f})<br>"
                        "AP %{customdata[2]:.3f} &middot; %{customdata[3]} positives"
                        "<extra></extra>")))
+    # Value labels sit past the END OF THE WHISKER, not at the bar end. textposition="outside"
+    # places them at auroc, which is 0.02-0.16 short of auroc_hi -- so the number printed on
+    # top of its own error bar. Anchoring to auroc_hi guarantees clearance for every row.
+    for _, r in d.iterrows():
+        fig.add_annotation(x=r.auroc_hi + 0.008, y=r.axis, text=f"{r.auroc:.3f}",
+                           showarrow=False, xanchor="left", yanchor="middle",
+                           font=dict(size=11, color=C_INK))
     fig.add_vline(x=0.5, line=dict(color="#8b9aa8", width=1, dash="dot"))
-    fig.add_annotation(x=0.5, y=-0.7, text="chance", showarrow=False,
+    # Pin the "chance" label to the top of the plot area rather than below the lowest
+    # category, where it competed with the axis title.
+    fig.add_annotation(x=0.5, yref="paper", y=1.02, text="chance", showarrow=False,
+                       xanchor="center", yanchor="bottom",
                        font=dict(size=9, color=C_MUTED))
     fig.update_layout(
         template="plotly_white", paper_bgcolor=C_PANEL, plot_bgcolor=C_PANEL,
@@ -874,7 +883,7 @@ def multibaseline_fig(mb):
                          "<br><sup>red = this method &middot; network centrality and Open Targets "
                          "genetics both score higher</sup>"),
                    font=dict(size=14, color=C_OXFORD), x=0.01, xanchor="left"),
-        xaxis=dict(title="AUROC (19 known targets among 1,923)", range=[0.35, 1.02],
+        xaxis=dict(title="AUROC (19 known targets among 1,923)", range=[0.35, 1.09],
                    gridcolor="#e3e8ef"),
         yaxis=dict(tickfont=dict(size=11)))
     return fig
@@ -1513,7 +1522,7 @@ mapd = load_map_by_condition()
  tab_weights, tab_bench) = st.tabs(
     ["🗺 Directional map", "⏱ Context dynamics", "🔻 Method funnel", "🌅 Landscape",
      "🧭 MS generalization", "🧬 Patient manifold", "⚖️ Re-weight the score",
-     "📊 Honest benchmark"])
+     "📊 Benchmark"])
 with tab_map:
     left, right = st.columns([1.15, 1])
     with left:
