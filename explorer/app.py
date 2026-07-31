@@ -21,6 +21,7 @@ Run:
     streamlit run app.py
 """
 import os
+import re
 import json
 import pandas as pd
 import streamlit as st
@@ -185,6 +186,88 @@ def ligand_structure_html(gene, height=440, spin=True, staged=True, reveal_ms=90
     return html
 
 # ------------------------------------------------------------------ filter engine
+@st.cache_data
+def load_ms_anchored():
+    """Genes carrying MS evidence from the patient-signature analysis (not Open Targets).
+    These are a separate line of evidence: the two sources do not overlap."""
+    try:
+        m = pd.read_csv(os.path.join(HERE, "ms_nominations_shortlist.csv"))
+        return set(m.loc[m.ms_nomination == True, "sym"])  # noqa: E712
+    except Exception:
+        return set()
+
+
+MS_ANCHORED_GENES = load_ms_anchored()
+
+# ------------------------------------------------------------------ disease filter
+# Curated disease vocabulary. Values are the exact lower-cased strings that appear in
+# the Open Targets annotation columns (ot_top_disease / ot_autoimmune_disease), so the
+# match is an equality test on a controlled vocabulary rather than a substring guess.
+# Built by enumerating the 145 distinct disease strings actually present in the data.
+DISEASE_GROUPS = {
+    "Multiple sclerosis": ["multiple sclerosis", "autoimmune disorder of central nervous system"],
+    "Rheumatoid arthritis": ["rheumatoid arthritis"],
+    "Type 1 diabetes": ["type 1 diabetes mellitus"],
+    "Inflammatory bowel disease": ["inflammatory bowel disease", "inflammatory bowel disease 25",
+                                   "crohn disease", "ulcerative colitis", "colitis",
+                                   "neonatal inflammatory skin and bowel disease"],
+    "Asthma / allergy": ["asthma", "childhood onset asthma",
+                         "asthma, nasal polyps, and aspirin intolerance",
+                         "allergic rhinitis", "atopic eczema"],
+    "Systemic lupus erythematosus": ["systemic lupus erythematosus", "familial chilblain lupus"],
+    "Psoriasis / psoriatic arthritis": ["psoriasis", "psoriasis vulgaris", "psoriatic arthritis"],
+    "Autoimmune thyroid disease": ["hashimoto thyroiditis", "graves disease",
+                                   "autoimmune thyroid disease", "hypothyroidism"],
+    "Ankylosing spondylitis": ["ankylosing spondylitis"],
+    "Vitiligo / alopecia areata": ["vitiligo", "alopecia areata"],
+}
+
+# Free-text synonyms -> canonical group, so "MS", "T1D", "IBD", "SLE" all work.
+DISEASE_ALIASES = {
+    "ms": "Multiple sclerosis", "multiple sclerosis": "Multiple sclerosis",
+    "ra": "Rheumatoid arthritis", "rheumatoid": "Rheumatoid arthritis",
+    "rheumatoid arthritis": "Rheumatoid arthritis",
+    "t1d": "Type 1 diabetes", "type 1 diabetes": "Type 1 diabetes",
+    "type i diabetes": "Type 1 diabetes", "iddm": "Type 1 diabetes",
+    "ibd": "Inflammatory bowel disease", "crohn": "Inflammatory bowel disease",
+    "crohns": "Inflammatory bowel disease", "crohn's": "Inflammatory bowel disease",
+    "ulcerative colitis": "Inflammatory bowel disease", "uc": "Inflammatory bowel disease",
+    "colitis": "Inflammatory bowel disease",
+    "asthma": "Asthma / allergy", "allergy": "Asthma / allergy",
+    "allergic": "Asthma / allergy", "atopy": "Asthma / allergy", "eczema": "Asthma / allergy",
+    "sle": "Systemic lupus erythematosus", "lupus": "Systemic lupus erythematosus",
+    "psoriasis": "Psoriasis / psoriatic arthritis", "psa": "Psoriasis / psoriatic arthritis",
+    "thyroid": "Autoimmune thyroid disease", "hashimoto": "Autoimmune thyroid disease",
+    "graves": "Autoimmune thyroid disease", "hypothyroidism": "Autoimmune thyroid disease",
+    "as": "Ankylosing spondylitis", "ankylosing spondylitis": "Ankylosing spondylitis",
+    "vitiligo": "Vitiligo / alopecia areata", "alopecia": "Vitiligo / alopecia areata",
+}
+
+
+def resolve_disease_text(q):
+    """Map a free-text disease query to a canonical group, or None if unrecognised."""
+    if not q:
+        return None
+    k = str(q).strip().lower().rstrip("?.")
+    if k in DISEASE_ALIASES:
+        return DISEASE_ALIASES[k]
+    for alias, grp in DISEASE_ALIASES.items():
+        if len(alias) > 3 and alias in k:
+            return grp
+    for grp, terms in DISEASE_GROUPS.items():
+        if k in grp.lower() or any(k in t for t in terms):
+            return grp
+    return None
+
+
+def disease_mask(d, groups):
+    """Rows whose Open Targets disease annotation falls in any selected group."""
+    terms = {t for g in groups for t in DISEASE_GROUPS.get(g, [])}
+    top = d.ot_top_disease.fillna("").str.lower()
+    auto = d.ot_autoimmune_disease.fillna("").str.lower()
+    return top.isin(terms) | auto.isin(terms)
+
+
 # The single canonical filter spec that BOTH the sidebar and the NL parser emit.
 def apply_filters(df, spec):
     d = df.copy()
@@ -203,10 +286,23 @@ def apply_filters(df, spec):
     if spec.get("novelty_class"):
         nc = spec["novelty_class"] if isinstance(spec["novelty_class"], list) else [spec["novelty_class"]]
         d = d[d.novelty_class.isin(nc)]
+    if spec.get("disease_groups"):
+        groups = spec["disease_groups"] if isinstance(spec["disease_groups"], list) else [spec["disease_groups"]]
+        d = d[disease_mask(d, groups)]
+    if spec.get("ms_anchored_only"):
+        d = d[d.target_gene.isin(MS_ANCHORED_GENES)]
     if spec.get("disease_contains"):
-        q = str(spec["disease_contains"]).lower()
-        d = d[d.ot_top_disease.fillna("").str.lower().str.contains(q)
-              | d.ot_autoimmune_disease.fillna("").str.lower().str.contains(q)]
+        # Free text: resolve to a curated group when possible (so "MS", "T1D", "IBD" work),
+        # otherwise fall back to a word-boundary substring match. A plain `in` test would
+        # make "RA" match "random", so the fallback is anchored on word boundaries.
+        q = str(spec["disease_contains"]).strip()
+        grp = resolve_disease_text(q)
+        if grp:
+            d = d[disease_mask(d, [grp])]
+        else:
+            pat = r"\b" + re.escape(q.lower())
+            d = d[d.ot_top_disease.fillna("").str.lower().str.contains(pat, regex=True)
+                  | d.ot_autoimmune_disease.fillna("").str.lower().str.contains(pat, regex=True)]
     if spec.get("condition") in ("Rest", "Stim8hr", "Stim48hr"):
         d = d[d.peak_condition == spec["condition"]]
     if spec.get("min_integrated_score") is not None:
@@ -230,6 +326,20 @@ FILTER_TOOL = {
             "condition": {"type": "string", "enum": ["Rest", "Stim8hr", "Stim48hr"]},
             "druggable_only": {"type": "boolean"},
             "novel_only": {"type": "boolean"},
+            "disease_groups": {"type": "array", "items": {"type": "string", "enum": [
+                "Multiple sclerosis",
+                "Rheumatoid arthritis",
+                "Type 1 diabetes",
+                "Inflammatory bowel disease",
+                "Asthma / allergy",
+                "Systemic lupus erythematosus",
+                "Psoriasis / psoriatic arthritis",
+                "Autoimmune thyroid disease",
+                "Ankylosing spondylitis",
+                "Vitiligo / alopecia areata"]},
+                "description": "Curated disease anchor groups. Prefer this over disease_contains."},
+            "ms_anchored_only": {"type": "boolean",
+                "description": "True only when the user asks for multiple-sclerosis genes from the patient-signature analysis."},
             "disease_contains": {"type": "string", "description": "a SPECIFIC disease name only (asthma, rheumatoid arthritis, type 1 diabetes, lupus, IBD, psoriasis). NOT generic words like 'inflammation' or 'immune'."},
             "max_rank": {"type": "integer"},
             "min_integrated_score": {"type": "number"},
@@ -242,7 +352,11 @@ PARSE_SYS = (
     "'agonize'/'brake'/'activate a brake' => direction=brake_agonize. "
     "'novel'/'undrugged'/'clean patent space' => novel_only=true. "
     "'druggable'/'small-molecule'/'antibody' => druggable_only=true. 'top N' => max_rank=N. "
-    "Only set disease_contains for a specific named disease. Never invent gene names."
+    "For diseases prefer disease_groups with one of the enumerated values: "
+    "MS/multiple sclerosis => 'Multiple sclerosis'; RA => 'Rheumatoid arthritis'; "
+    "T1D => 'Type 1 diabetes'; IBD/Crohn/colitis => 'Inflammatory bowel disease'; "
+    "asthma/allergy/atopy => 'Asthma / allergy'; SLE/lupus => 'Systemic lupus erythematosus'. "
+    "Use disease_contains only for a disease outside that list. Never invent gene names."
 )
 
 def get_client():
@@ -672,7 +786,24 @@ with st.sidebar:
     if cond != "(any)": spec["condition"] = cond
     if st.checkbox("Druggable only"): spec["druggable_only"] = True
     if st.checkbox("Novel / undrugged only"): spec["novel_only"] = True
-    disease = st.text_input("Disease anchor contains")
+    st.markdown("**Disease**")
+    dis_groups = st.multiselect(
+        "Disease anchor (Open Targets)", list(DISEASE_GROUPS.keys()),
+        help="Filters on the Open Targets disease association for each target. "
+             "Coverage is deliberately sparse: only genes with a scored disease "
+             "association carry an anchor, so selecting a disease narrows the list "
+             "sharply. Groups collapse synonymous terms (e.g. Crohn / ulcerative "
+             "colitis / colitis all sit under inflammatory bowel disease).")
+    if dis_groups: spec["disease_groups"] = dis_groups
+    if MS_ANCHORED_GENES:
+        if st.checkbox(f"MS-anchored genes only ({len(MS_ANCHORED_GENES)})",
+                       help="Genes carrying multiple sclerosis evidence from the "
+                            "patient-derived signature analysis. This is a separate, "
+                            "non-overlapping line of evidence from the Open Targets "
+                            "MS annotation above."):
+            spec["ms_anchored_only"] = True
+    disease = st.text_input("…or type a disease",
+                            help="Accepts abbreviations: MS, RA, T1D, IBD, SLE.")
     if disease.strip(): spec["disease_contains"] = disease.strip()
     maxrank = st.number_input("Max rank (0 = no limit)", min_value=0, max_value=1923, value=0)
     if maxrank > 0: spec["max_rank"] = int(maxrank)
@@ -706,6 +837,26 @@ if nlq and client is not None:
 
 # results
 res = apply_filters(df, spec)
+
+# Disease filters are informative only where an anchor exists, so say so explicitly
+# rather than letting an empty table look like "no such targets".
+_dgroups = spec.get("disease_groups") or ([] if not spec.get("disease_contains") else None)
+if spec.get("disease_groups") or spec.get("disease_contains") or spec.get("ms_anchored_only"):
+    _n_anchored = int((df.ot_top_disease.notna() | df.ot_autoimmune_disease.notna()).sum())
+    _bits = []
+    if spec.get("disease_groups"):
+        _bits.append("disease anchor: " + ", ".join(spec["disease_groups"]))
+    if spec.get("ms_anchored_only"):
+        _bits.append(f"MS-anchored set ({len(MS_ANCHORED_GENES)} genes)")
+    if spec.get("disease_contains"):
+        _g = resolve_disease_text(spec["disease_contains"])
+        _bits.append(f'text "{spec["disease_contains"]}"' + (f" -> {_g}" if _g else " (no group match)"))
+    st.info(
+        f"**Filtered by disease** — {' · '.join(_bits)}. "
+        f"{len(res)} target(s). Note only {_n_anchored} of {len(df)} shortlist entries carry any "
+        f"Open Targets disease anchor, so a disease filter narrows the list sharply; an empty "
+        f"result means no *anchored* target matched, not that no target is relevant."
+    )
 
 # KPI cards
 n = len(res)
