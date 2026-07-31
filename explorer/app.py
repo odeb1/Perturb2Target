@@ -1145,7 +1145,7 @@ st.markdown("""
   call to <b>block a driver</b> or <b>activate a brake</b>, anchored in human genetics and
   filtered for druggability. Every figure and filter is computed on the real data; the
   language model only translates your words into filters and narrates a gene's own
-  evidence row &mdash.</p>
+  evidence.</p>
 </div>
 """, unsafe_allow_html=True)
 
