@@ -2,3 +2,6 @@ MS_data/cd4_BC_integrated_10pct.h5ad
 .streamlit/secrets.toml
 explorer/.streamlit/secrets.toml
 *.env
+0_RESEARCH_PAPER_README.pdf
+FINAL_pitch_deck_3min_READ_ME.pdf
+*.pptx
