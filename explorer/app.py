@@ -483,11 +483,73 @@ def get_client():
     except Exception:
         return None
 
-MODEL = _secret("ANTHROPIC_MODEL", "claude-3-5-haiku-latest")
+
+# Preference order for automatic model selection: cheap-and-fast first, since the job is
+# short structured extraction, then larger models as fallbacks. Matching is by PREFIX
+# against the live model list, so a dated release (e.g. claude-haiku-4-5-20251001) is
+# picked up without this list needing to name the exact snapshot.
+MODEL_PREFERENCE = ("claude-haiku-4-5", "claude-sonnet-4-5", "claude-sonnet-4-6",
+                    "claude-haiku", "claude-sonnet", "claude-opus")
+
+
+@st.cache_data(show_spinner=False, ttl=3600)
+def _discover_model(_key_fingerprint):
+    """Ask the API which models this key can actually use, and pick the cheapest suitable one.
+
+    Hardcoding a model id is a maintenance trap: ids are retired, and the app then fails
+    with a 404 that looks like a bug in the query parser rather than a stale constant.
+    The argument is only a cache key -- the real key is read inside via _secret().
+    """
+    try:
+        import anthropic
+        key = _secret("ANTHROPIC_API_KEY")
+        if not key:
+            return None, []
+        ids = [m.id for m in anthropic.Anthropic(api_key=str(key).strip()).models.list(limit=100).data]
+        for pref in MODEL_PREFERENCE:
+            for mid in ids:
+                if mid.startswith(pref):
+                    return mid, ids
+        return (ids[0] if ids else None), ids
+    except Exception:
+        return None, []
+
+
+def resolve_model():
+    """Explicit ANTHROPIC_MODEL wins; otherwise discover a valid id from the API."""
+    pinned = _secret("ANTHROPIC_MODEL")
+    if pinned:
+        return str(pinned).strip(), "pinned via ANTHROPIC_MODEL"
+    key = _secret("ANTHROPIC_API_KEY")
+    fp = (str(key)[-6:] if key else "none")
+    mid, _ = _discover_model(fp)
+    if mid:
+        return mid, "auto-selected from the models available to your key"
+    return None, "could not reach the models endpoint"
+
+
+MODEL, MODEL_SOURCE = resolve_model()
+
+def _create_with_fallback(client, **kw):
+    """Call the API, and if the model id is rejected, retry once with a discovered one.
+
+    This matters when ANTHROPIC_MODEL is pinned to an id that has since been retired:
+    without the retry the app surfaces a bare 404 that reads like a parser failure.
+    """
+    try:
+        return client.messages.create(model=MODEL, **kw)
+    except Exception as e:
+        if "not_found_error" not in str(e) and "model:" not in str(e):
+            raise
+        alt, _ = _discover_model("retry")
+        if not alt or alt == MODEL:
+            raise
+        return client.messages.create(model=alt, **kw)
+
 
 def nl_to_spec(client, query):
-    msg = client.messages.create(
-        model=MODEL, max_tokens=400, system=PARSE_SYS,
+    msg = _create_with_fallback(
+        client, max_tokens=400, system=PARSE_SYS,
         tools=[FILTER_TOOL], tool_choice={"type": "tool", "name": "set_filters"},
         messages=[{"role": "user", "content": query}],
     )
@@ -514,8 +576,8 @@ def explain_gene(client, row):
         "program, so BLOCK it; brake_agonize = knockdown raises it, so ACTIVATE it), and tie together the "
         "genetics tier, disease anchor, and suggested modality. If a value is missing, say so; never guess."
     )
-    msg = client.messages.create(
-        model=MODEL, max_tokens=350, system=sys,
+    msg = _create_with_fallback(
+        client, max_tokens=350, system=sys,
         messages=[{"role": "user", "content": "Evidence JSON:\n" + json.dumps(ev, indent=1)}],
     )
     return "".join(b.text for b in msg.content if b.type == "text")
@@ -1007,7 +1069,23 @@ if nlq and client is not None:
                             width="stretch", config={"displayModeBar": False})
             st.caption("Press ▶ Trace query — the matches light up while the rest of the landscape fades back.")
     except Exception as e:
-        st.error(f"Parse failed ({e}); using sidebar filters.")
+        _emsg = str(e)
+        if "not_found_error" in _emsg or "model:" in _emsg:
+            st.error(
+                f"The configured model is not available to this API key "
+                f"(`{MODEL}`, {MODEL_SOURCE}). Model ids are retired over time. "
+                "Either remove `ANTHROPIC_MODEL` from your secrets so the app "
+                "auto-selects a valid model, or set it to one your key supports. "
+                "Sidebar filters are unaffected and still give the full result set."
+            )
+        elif "authentication" in _emsg.lower() or "401" in _emsg:
+            st.error("The API key was rejected. Check `ANTHROPIC_API_KEY` in "
+                     "Settings → Secrets. Sidebar filters still work.")
+        elif "rate_limit" in _emsg or "429" in _emsg:
+            st.warning("Rate-limited by the API — try again shortly. "
+                       "Sidebar filters are unaffected.")
+        else:
+            st.error(f"Parse failed ({e}); using sidebar filters.")
 
 # results
 res = apply_filters(df, spec)
