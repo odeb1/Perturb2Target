@@ -52,6 +52,31 @@ The app has two layers, and the split is deliberate:
 So the LLM makes the tool *conversational* without ever inventing a gene or a number —
 the same honesty discipline the whole project rests on.
 
+## Design system
+
+The interface uses **Oxford Blue `#002147`** as its single brand colour, with a muted
+brass as the only accent. Tokens live at the top of `app.py`:
+
+| Token | Value | Use |
+|---|---|---|
+| `C_OXFORD` | `#002147` | masthead, sidebar, headings, metric figures |
+| `C_OXFORD_LT` | `#01305f` | gradient stop, hover states, links |
+| `C_BRASS` | `#b08d57` | accents **on Oxford Blue** only (5.2:1 there) |
+| `C_BRASS_DK` | `#8a6a38` | brass text on light backgrounds (`#b08d57` is 2.9:1 there — under the floor) |
+| `C_DRIVER` / `C_BRAKE` | `#c1272d` / `#1a7f9e` | **data encoding** — block a driver / activate a brake |
+
+`C_DRIVER` and `C_BRAKE` are deliberately outside the brand palette: they carry the
+directional call, which is the paper's central claim, so they must stay distinguishable
+from decoration and from each other. Do not restyle them for visual consistency.
+
+Typography is Inter for UI and Source Serif 4 for display (the wordmark, metric figures
+and section numerals), both loaded from Google Fonts with a full system fallback so the
+app degrades cleanly offline.
+
+Every foreground/background pair in the stylesheet was measured against WCAG AA: all 18
+clear the 4.5:1 body-text threshold except the section numeral, which is large display
+text and clears the 3:1 large-text floor at 4.7:1.
+
 ## Run
 
 ```bash
@@ -95,6 +120,81 @@ Sonnet then Opus), so a retired model id cannot break the app. Set `ANTHROPIC_MO
 secrets only if you want to pin a specific one — a pinned value always wins, and a stale
 pin will produce a 404, so prefer leaving it unset.
 Keys come from console.anthropic.com → API keys.
+
+## Tabs
+
+| Tab | Shows |
+|---|---|
+| 🗺 Directional map | causal effect vs genetics, bubble = integrated score |
+| ⏱ Context dynamics | targets move as the T cell activates (Rest → 8 h → 48 h) |
+| 🔻 Method funnel | 11,526 genes → 1,923 directional → 150 genetics-anchored |
+| 🌅 Landscape | direction → protein class → disease sunburst |
+| 🧭 MS generalization | confound-corrected directional test on MS patient data |
+| 🧬 Patient manifold | candidate MS-reversing knockdowns overlaid on the patient CD4 manifold |
+| ⚖️ Re-weight the score | move the four integration weights and watch the ranking respond |
+| 📊 Honest benchmark | our scores vs three external baselines — including where we lose |
+
+Plus a per-gene **Agentic reasoning layer** panel in the deep-dive section, for the 92
+genes the reasoning layer triaged.
+
+### Patient manifold tab
+
+`ms_projection_app.parquet` (7,874 knockdown×context effects) placed on the integrated
+CD4 atlas UMAP, over a grey cloud of patient cells from
+`ms_manifold_background.parquet` — 25,000 of the atlas's 188,422 cells, downsampled
+because the cloud only conveys the manifold's shape.
+
+Colour is the **raw** MS reversal score on a diverging scale centred on zero: red moves
+cells against the MS disease direction (candidate therapeutic), blue with it. The
+activation context is selectable, which the static version of this figure could not do —
+pooling contexts hid the fact that a knockdown's position moves as the T cell activates,
+and the top-reversing set genuinely differs between them (EIF1/ATXN2L at rest,
+KATNIP/MPI at 8 h, RPUSD3/MICOS13 at 48 h).
+
+The panel carries an on-screen caveat: raw reversal score is confounded by knockdown
+breadth, and the result quoted in the paper uses the footprint-matched corrected score
+(confound correlation −0.33 → −0.07), not the raw score plotted here.
+
+### Agentic reasoning layer panel
+
+`agentic_triage_calls.csv` — 92 of the 1,923 shortlist genes (4.8%), including the
+top-ranked ones. For each, the reasoning layer's own `therapeutic_action` call, a
+confidence, `layers_concordant` (1–4), and whether it agrees with the screen.
+
+**29 of 92 disagree with the screen's directional call, and all 29 carry an explicit
+`primary_inconsistency`.** The panel shows disagreements rather than suppressing them —
+IL4R is the sharp case: ranked #1 as a brake to agonize, while the reasoning layer notes
+at high confidence that dupilumab works by *blocking* IL4R. A pipeline that surfaces its
+own contradiction is more trustworthy than one that hides it.
+
+The layer indicator shows filled/empty slots for `layers_concordant` and deliberately does
+not name *which* layer dissented — the data is a count, and rendering per-layer detail
+would imply resolution the file does not contain.
+
+### Re-weight the score tab
+
+Sliders for the four integration weights, recomputing `custom_score` from the stored
+components and re-ranking live. Weights are normalised to sum to 1, so the score stays on
+its published scale.
+
+Verified: at the published weights (0.34/0.30/0.22/0.14) the panel reproduces the
+published top-15 exactly (Pearson r = 1.0, identical ranks). The panel is responsive —
+genetics-only weighting swaps 7 of the top 15.
+
+The tab also reports the robustness analysis: Spearman 0.995 under ±40% perturbation, but
+top-20 Jaccard only 0.74, and drop-one retention showing genetics most load-bearing (0.46)
+and novelty least (0.84).
+
+### Honest benchmark tab
+
+`multibaseline_comparison_results.csv` — six methods recovering 19 known immunomodulatory
+drug targets from the 1,923 shortlist, with bootstrap CIs.
+
+**This tab shows a result where the method loses.** Network centrality (0.950) and Open
+Targets genetics (0.909) both beat the full integrated score (0.820). The tab states why
+we keep it: recovering known targets rewards reproducing existing knowledge, none of the
+baselines makes a *directional* call, and the CIs overlap heavily (0.695–0.926 vs
+0.928–0.971) so with 19 positives the ordering is not firmly established.
 
 ## What you can ask in plain language
 

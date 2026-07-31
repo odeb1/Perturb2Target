@@ -1,0 +1,7 @@
+axis,group,auroc,auroc_lo,auroc_hi,ap,ap_lo,ap_hi,random_ap,n_positives,n_universe
+DE effect-magnitude (baseline),baseline,0.693,0.54,0.828,0.043,0.016,0.128,0.0099,19,1923
+Network centrality (baseline),baseline,0.95,0.928,0.971,0.17,0.069,0.357,0.0099,19,1923
+Disease genetics OT (baseline),baseline-OT,0.909,0.817,0.98,0.228,0.114,0.453,0.0099,19,1923
+Causal effect (|emp z|),ours-clean,0.585,0.413,0.744,0.025,0.01,0.081,0.0099,19,1923
+Causal + genetics,ours-clean,0.838,0.725,0.944,0.276,0.112,0.517,0.0099,19,1923
+Full integrated (4 layers),ours-mixed,0.82,0.695,0.926,0.37,0.176,0.581,0.0099,19,1923

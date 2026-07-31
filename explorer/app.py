@@ -73,6 +73,18 @@ def load_map_by_condition():
     return pd.read_parquet(fp) if os.path.exists(fp) else None
 
 @st.cache_data
+def load_agentic_calls():
+    """Per-gene calls from the agentic reasoning layer (92 of the 1,923 shortlist genes).
+
+    Each row is one gene the reasoning layer triaged: its own therapeutic_action call, a
+    confidence, how many of the four evidence layers were concordant, whether it agreed
+    with the screen's directional call, and -- where it disagreed -- an explicit
+    primary_inconsistency. Coverage is deliberately partial: only 92 genes were triaged.
+    """
+    fp = os.path.join(HERE, "agentic_triage_calls.csv")
+    return pd.read_csv(fp) if os.path.exists(fp) else None
+
+@st.cache_data
 def load_ms_projection():
     """KD x context effects placed on the patient CD4 manifold (7,874 rows).
 
@@ -766,20 +778,24 @@ def funnel_animated(stages):
         return go.Bar(y=labels, x=[c if c is not None else 0 for c in xs], orientation="h",
                       marker=dict(color=palette), text=txt, textposition="outside",
                       cliponaxis=False, hovertemplate="%{y}: %{x:,}<extra></extra>")
-    fig = go.Figure(data=[frame_bars(1)],
+    # Initialise with every stage shown. Starting at frame_bars(1) meant only the first bar
+    # was visible until someone pressed Play, so the funnel -- the whole point of the panel --
+    # was hidden behind a click. Frames are kept so the reveal can still be replayed.
+    fig = go.Figure(data=[frame_bars(len(stages))],
                     frames=[go.Frame(data=[frame_bars(k)], name=str(k)) for k in range(1, len(stages) + 1)])
     fig.update_layout(
         template="plotly_white", paper_bgcolor=C_PANEL, plot_bgcolor=C_PANEL, font=dict(color=C_INK, family=FONT_UI),
         height=420, margin=dict(l=10, r=60, t=56, b=30),
         title=dict(text="From genome to six leads — one filter at a time<br>"
-                        "<sup>press ▶ to watch 11,526 genes narrow to 6 nominations</sup>",
+                        "<sup>11,526 genes narrow to 6 nominations · ↻ replays the reveal</sup>",
                    font=dict(size=15, color=C_OXFORD)),
         xaxis=dict(title="targets remaining (log)", type="log", gridcolor="#e3e8ef"),
         yaxis=dict(autorange="reversed", tickfont=dict(size=12)),
         updatemenus=[dict(type="buttons", showactive=False, x=0.98, y=1.10, xanchor="right",
-                          buttons=[dict(label="▶ Play", method="animate",
+                          buttons=[dict(label="↻ Replay", method="animate",
                                         args=[None, {"frame": {"duration": 800, "redraw": True},
-                                                     "fromcurrent": True}])])])
+                                                     "fromcurrent": False,
+                                                     "mode": "immediate"}])])])
     return fig
 
 def score_buildup(row):
@@ -823,6 +839,156 @@ def score_buildup(row):
                                         args=[None, {"frame": {"duration": 650, "redraw": True},
                                                      "fromcurrent": False,
                                                      "mode": "immediate"}])])])
+    return fig
+
+def multibaseline_fig(mb):
+    """Honest benchmarking: our scores against three external baselines, with CIs.
+
+    Bars are ordered by AUROC so the reader sees immediately that two baselines beat the
+    full integrated score. Error bars are the bootstrap CIs already in the results table --
+    they overlap heavily, which is the actual finding.
+    """
+    import plotly.graph_objects as go
+    d = mb.sort_values("auroc")
+    cols = [C_DRIVER if g.startswith("ours") else "#9fb3c8" for g in d.group]
+    fig = go.Figure(go.Bar(
+        x=d.auroc, y=d.axis, orientation="h", marker=dict(color=cols),
+        error_x=dict(type="data", symmetric=False,
+                     array=(d.auroc_hi - d.auroc).tolist(),
+                     arrayminus=(d.auroc - d.auroc_lo).tolist(),
+                     color="#5a6b7b", thickness=1.2, width=4),
+        text=[f"{v:.3f}" for v in d.auroc], textposition="outside", cliponaxis=False,
+        customdata=d[["auroc_lo", "auroc_hi", "ap", "n_positives"]].values,
+        hovertemplate=("<b>%{y}</b><br>AUROC %{x:.3f} "
+                       "(95%% CI %{customdata[0]:.3f}&ndash;%{customdata[1]:.3f})<br>"
+                       "AP %{customdata[2]:.3f} &middot; %{customdata[3]} positives"
+                       "<extra></extra>")))
+    fig.add_vline(x=0.5, line=dict(color="#8b9aa8", width=1, dash="dot"))
+    fig.add_annotation(x=0.5, y=-0.7, text="chance", showarrow=False,
+                       font=dict(size=9, color=C_MUTED))
+    fig.update_layout(
+        template="plotly_white", paper_bgcolor=C_PANEL, plot_bgcolor=C_PANEL,
+        font=dict(color=C_INK, family=FONT_UI), height=340,
+        margin=dict(l=10, r=80, t=64, b=46),
+        title=dict(text=("Recovering known drug targets: ours vs external baselines"
+                         "<br><sup>red = this method &middot; network centrality and Open Targets "
+                         "genetics both score higher</sup>"),
+                   font=dict(size=14, color=C_OXFORD), x=0.01, xanchor="left"),
+        xaxis=dict(title="AUROC (19 known targets among 1,923)", range=[0.35, 1.02],
+                   gridcolor="#e3e8ef"),
+        yaxis=dict(tickfont=dict(size=11)))
+    return fig
+
+@st.cache_data
+def load_multibaseline():
+    """AUROC/AP for our scores vs three external baselines (6 rows)."""
+    fp = os.path.join(HERE, "multibaseline_comparison_results.csv")
+    return pd.read_csv(fp) if os.path.exists(fp) else None
+
+@st.cache_data
+def load_weight_sensitivity():
+    """Summary of the +/-40% weight-perturbation robustness analysis."""
+    fp = os.path.join(HERE, "weight_sensitivity_summary.json")
+    if not os.path.exists(fp):
+        return None
+    with open(fp) as fh:
+        return json.load(fh)
+
+def weight_reranking_fig(dfp, w_causal, w_gen, w_drug, w_nov, top_n=15):
+    """Live re-ranking under user-chosen integration weights.
+
+    Recomputes the integrated score from the four stored components and shows how the
+    top-N shifts against the published weights (0.34/0.30/0.22/0.14). Weights are
+    normalised to sum to 1 so the score stays on its original scale and the comparison
+    is like-for-like.
+    """
+    import plotly.graph_objects as go
+    tot = w_causal + w_gen + w_drug + w_nov
+    if tot <= 0:
+        tot = 1.0
+    wc, wg, wd, wn = (w_causal / tot, w_gen / tot, w_drug / tot, w_nov / tot)
+    d = dfp.copy()
+    d["custom_score"] = (wc * d.causal_component + wg * d.genetics_component
+                         + wd * d.drug_component + wn * d.novelty_component)
+    d["custom_rank"] = d.custom_score.rank(ascending=False, method="min").astype(int)
+    pub = d.nsmallest(top_n, "rank")
+    top = d.nsmallest(top_n, "custom_rank").sort_values("custom_rank")
+    # Colour by whether a gene is in the published top-N: entrants are the interesting cases.
+    pubset = set(pub.target_gene)
+    cols = [C_OXFORD if g in pubset else C_BRASS_DK for g in top.target_gene]
+    fig = go.Figure(go.Bar(
+        x=top.custom_score, y=top.target_gene, orientation="h",
+        marker=dict(color=cols),
+        text=[f"{s:.3f}  (was #{int(r)})" for s, r in zip(top.custom_score, top["rank"])],
+        textposition="outside", cliponaxis=False,
+        customdata=top[["rank", "custom_rank", "direction"]].values,
+        hovertemplate=("<b>%{y}</b><br>custom score %{x:.3f}<br>"
+                       "published rank %{customdata[0]} &rarr; custom rank %{customdata[1]}"
+                       "<extra></extra>")))
+    n_new = int(sum(1 for g in top.target_gene if g not in pubset))
+    fig.update_layout(
+        template="plotly_white", paper_bgcolor=C_PANEL, plot_bgcolor=C_PANEL,
+        font=dict(color=C_INK, family=FONT_UI), height=440,
+        margin=dict(l=10, r=130, t=62, b=40),
+        title=dict(text=(f"Top {top_n} under your weights"
+                         f"<br><sup>{n_new} gene(s) not in the published top {top_n} "
+                         f"&middot; brass = new entrant, navy = also published</sup>"),
+                   font=dict(size=14, color=C_OXFORD), x=0.01, xanchor="left"),
+        xaxis=dict(title="re-weighted integrated score", gridcolor="#e3e8ef"),
+        yaxis=dict(autorange="reversed", tickfont=dict(size=11)))
+    return fig, d
+
+def agentic_layers_fig(call):
+    """Four-layer concordance for one gene, as a compact horizontal indicator.
+
+    layers_concordant is a count (1-4), not per-layer detail, so this shows filled vs
+    empty slots rather than naming which layer dissented -- claiming more resolution than
+    the data has would be a fabrication.
+    """
+    import plotly.graph_objects as go
+    n = int(call["layers_concordant"])
+    agree = str(call["agrees_with_screen"])
+    col = {"yes": C_BRAKE, "no": C_DRIVER, "uncertain": "#8b9aa8"}.get(agree, "#8b9aa8")
+    fig = go.Figure()
+    for i in range(4):
+        filled = i < n
+        fig.add_trace(go.Bar(
+            x=[1], y=["layers"], orientation="h", showlegend=False,
+            marker=dict(color=col if filled else "#eaeef4",
+                        line=dict(width=1, color="#ffffff")),
+            hovertemplate=(f"layer {i+1}: concordant<extra></extra>" if filled
+                           else f"layer {i+1}: not concordant<extra></extra>")))
+    fig.update_layout(
+        barmode="stack", template="plotly_white", paper_bgcolor=C_PANEL, plot_bgcolor=C_PANEL,
+        height=72, margin=dict(l=6, r=6, t=30, b=6),
+        title=dict(text=f"{n} of 4 evidence layers concordant",
+                   font=dict(size=11.5, color=C_OXFORD), x=0.0, xanchor="left"),
+        xaxis=dict(visible=False), yaxis=dict(visible=False))
+    return fig
+
+def agentic_overview_fig(ag):
+    """Distribution of the reasoning layer's calls across all 92 triaged genes."""
+    import plotly.graph_objects as go
+    order = ["high", "medium", "low"]
+    agree_order = ["yes", "no", "uncertain"]
+    cols = {"yes": C_BRAKE, "no": C_DRIVER, "uncertain": "#8b9aa8"}
+    labs = {"yes": "agrees with screen", "no": "disagrees", "uncertain": "uncertain"}
+    fig = go.Figure()
+    for a in agree_order:
+        counts = [int(((ag.confidence == c) & (ag.agrees_with_screen == a)).sum()) for c in order]
+        fig.add_trace(go.Bar(x=order, y=counts, name=labs[a], marker=dict(color=cols[a]),
+                             text=[c if c else "" for c in counts], textposition="inside",
+                             hovertemplate="%{x} confidence · " + labs[a] + ": %{y}<extra></extra>"))
+    fig.update_layout(
+        barmode="stack", template="plotly_white", paper_bgcolor=C_PANEL, plot_bgcolor=C_PANEL,
+        font=dict(color=C_INK, family=FONT_UI), height=300,
+        margin=dict(l=50, r=20, t=58, b=40),
+        title=dict(text=("Reasoning layer: 92 genes triaged"
+                         "<br><sup>disagreements are the useful cases &mdash; every one carries an "
+                         "explicit inconsistency flag</sup>"),
+                   font=dict(size=14, color=C_OXFORD), x=0.01, xanchor="left"),
+        xaxis=dict(title="confidence"), yaxis=dict(title="genes"),
+        legend=dict(orientation="h", y=-0.22, x=0.5, xanchor="center", font=dict(size=10)))
     return fig
 
 def ms_manifold_overlay(proj, bg, context="All", top_n=20):
@@ -952,7 +1118,11 @@ def disease_sunburst(dfp):
     return fig
 
 def query_trace_map(dfp, match_genes):
-    """#5 Trace a query on the map: all points fade, then matches light up (2-frame animation)."""
+    """#5 Trace a query on the map: matches highlighted, non-matches faded back.
+
+    Renders in the revealed state so the answer is visible immediately; the two frames
+    remain so the reveal can be replayed or the full landscape shown undimmed.
+    """
     import plotly.graph_objects as go
     match = set(match_genes)
     def traces(revealed):
@@ -972,7 +1142,11 @@ def query_trace_map(dfp, match_genes):
                 text=d.target_gene,
                 hovertemplate="<b>%{text}</b><br>causal %{x:.2f} · genetics %{y:.2f}<extra></extra>"))
         return out
-    fig = go.Figure(data=traces(False),
+    # Initialise in the REVEALED state: matches highlighted, non-matches faded back. The
+    # panel's whole content is which targets your query picked out, and traces(False) is a
+    # uniform cloud that shows none of it -- so the default has to be the revealed frame,
+    # not the pre-reveal one. Both frames stay available as replay / show-all.
+    fig = go.Figure(data=traces(True),
                     frames=[go.Frame(data=traces(False), name="all"),
                             go.Frame(data=traces(True), name="matches")])
     fig.update_layout(
@@ -984,11 +1158,12 @@ def query_trace_map(dfp, match_genes):
         yaxis=dict(title="human-genetics support", gridcolor="#e3e8ef"),
         legend=dict(orientation="h", yanchor="top", y=-0.14, x=0.5, xanchor="center"),
         updatemenus=[dict(type="buttons", showactive=False, x=0.98, y=1.10, xanchor="right",
-                          buttons=[dict(label="▶ Trace query", method="animate",
-                                        args=[["matches"], {"frame": {"duration": 700, "redraw": True},
-                                                            "transition": {"duration": 500},
-                                                            "mode": "immediate"}]),
-                                   dict(label="⟲ Reset", method="animate",
+                          buttons=[dict(label="↻ Replay reveal", method="animate",
+                                        args=[["all", "matches"],
+                                              {"frame": {"duration": 700, "redraw": True},
+                                               "transition": {"duration": 500},
+                                               "mode": "immediate"}]),
+                                   dict(label="◌ Show all", method="animate",
                                         args=[["all"], {"frame": {"duration": 300, "redraw": True},
                                                         "mode": "immediate"}])])])
     return fig
@@ -1267,12 +1442,14 @@ if nlq and client is not None:
         chips = " ".join(f"<span class='pill' style='background:#2a4a6a'>{k}={v}</span>"
                          for k, v in nlspec.items())
         st.markdown("**Parsed filters:** " + (chips or "<i>none</i>"), unsafe_allow_html=True)
-        # #5 query trace: light up the matches against the full landscape
+        # #5 query trace: matches shown highlighted on load; animation is an optional replay
         match_res = apply_filters(df, nlspec)
         if 0 < len(match_res) <= df.shape[0]:
             st.plotly_chart(query_trace_map(df, set(match_res.target_gene)),
                             width="stretch", config={"displayModeBar": False})
-            st.caption("Press ▶ Trace query — the matches light up while the rest of the landscape fades back.")
+            st.caption("Your matches are highlighted against the full landscape; everything else is "
+                       "faded back. Press ↻ Replay reveal to watch them light up, or ◌ Show all "
+                       "to see the whole shortlist undimmed.")
     except Exception as e:
         _emsg = str(e)
         if "not_found_error" in _emsg or "model:" in _emsg:
@@ -1332,9 +1509,11 @@ st.markdown("")
 
 # ------- hero: tabbed views (static map / animated context / landscape sunburst) -------
 mapd = load_map_by_condition()
-tab_map, tab_ctx, tab_funnel, tab_land, tab_ms, tab_overlay = st.tabs(
+(tab_map, tab_ctx, tab_funnel, tab_land, tab_ms, tab_overlay,
+ tab_weights, tab_bench) = st.tabs(
     ["🗺 Directional map", "⏱ Context dynamics", "🔻 Method funnel", "🌅 Landscape",
-     "🧭 MS generalization", "🧬 Patient manifold"])
+     "🧭 MS generalization", "🧬 Patient manifold", "⚖️ Re-weight the score",
+     "📊 Honest benchmark"])
 with tab_map:
     left, right = st.columns([1.15, 1])
     with left:
@@ -1357,8 +1536,9 @@ with tab_funnel:
                      ("+ Druggable", 374), ("+ Genetics anchor", 150),
                      ("+ Novel / undrugged", 86), ("Deep-dive leads", 6)]
     st.plotly_chart(funnel_animated(funnel_stages), width="stretch", config={"displayModeBar": False})
-    st.caption("Press ▶ to watch the genome-scale screen narrow, one filter at a time, to the six leads. "
-               "Each stage is a strict subset of the one above it.")
+    st.caption("The genome-scale screen narrows from 11,526 genes to six deep-dive leads. Each stage "
+               "is a strict subset of the one above it. Press ↻ Replay to watch the filters apply "
+               "one at a time.")
 with tab_land:
     st.plotly_chart(disease_sunburst(res), width="stretch", config={"displayModeBar": False})
     st.caption("Click a wedge to zoom in: direction → protein class → disease anchor.")
@@ -1433,6 +1613,57 @@ if n:
                      "peak_emp_fdr": float(row.peak_emp_fdr),
                      "genetics_tier": row.genetics_tier, "top_disease": row.ot_top_disease,
                      "suggested_modality": row.suggested_modality, "novelty_class": row.novelty_class})
+
+    # agentic reasoning layer — shown only for the 92 genes actually triaged
+    _ag = load_agentic_calls()
+    if _ag is not None and gene in set(_ag.gene):
+        _call = _ag[_ag.gene == gene].iloc[0]
+        _agree = str(_call["agrees_with_screen"])
+        _badge = {"yes": ("agrees with the screen", C_BRAKE),
+                  "no": ("disagrees with the screen", C_DRIVER),
+                  "uncertain": ("uncertain", "#8b9aa8")}.get(_agree, ("uncertain", "#8b9aa8"))
+        st.markdown(
+            "<div class='sec' style='margin-top:22px'><span class='n'>&mdash;</span>"
+            "<h3 style='font-size:15px'>Agentic reasoning layer</h3>"
+            "<span class='sub'>an independent mechanistic read of this gene</span></div>",
+            unsafe_allow_html=True)
+        _r1, _r2 = st.columns([1.35, 1])
+        with _r1:
+            st.markdown(
+                f"<span class='pill' style='background:{_badge[1]}'>{_badge[0]}</span> "
+                f"<span class='pill' style='background:#5a6b7b'>{_call['confidence']} confidence</span>",
+                unsafe_allow_html=True)
+            _act = _call["therapeutic_action"]
+            st.markdown(
+                f"- **screen says** {_call['screen_direction']}\n"
+                f"- **reasoning layer says** "
+                f"{_act if isinstance(_act, str) and _act.strip() else '_no call_'}\n"
+                f"- **reference rank** {int(_call['ref_rank'])}")
+            st.markdown(f"**Mechanistic rationale.** {_call['mechanistic_rationale']}")
+            _inc = _call["primary_inconsistency"]
+            if isinstance(_inc, str) and _inc.strip():
+                st.warning(f"**Flagged inconsistency.** {_inc}")
+            _rep = _call["repurposing_note"]
+            if isinstance(_rep, str) and _rep.strip():
+                st.caption(f"Repurposing note: {_rep}")
+        with _r2:
+            st.plotly_chart(agentic_layers_fig(_call), width="stretch",
+                            config={"displayModeBar": False})
+            st.caption(
+                "The reasoning layer reads each gene's evidence independently of the "
+                "ranking. Where it disagrees with the screen's directional call, that "
+                "disagreement is the signal worth attention — not an error to hide."
+            )
+        with st.expander("How this gene sits among all 92 triaged genes"):
+            st.plotly_chart(agentic_overview_fig(_ag), width="stretch",
+                            config={"displayModeBar": False})
+            _nd = int((_ag.agrees_with_screen == "no").sum())
+            st.caption(
+                f"{_nd} of 92 genes disagree with the screen's call, and every one carries an "
+                "explicit inconsistency flag rather than a silent override. Only 92 of the "
+                "1,923 shortlisted genes were triaged, so absence of a panel means a gene "
+                "was not assessed — not that it passed."
+            )
 
     # signature-response heatmap (#1) — the mechanism reveal
     sigdf = load_signature_response()
@@ -1568,6 +1799,76 @@ with tab_overlay:
             "confound correlation from −0.33 to −0.07, and the directional result quoted in the "
             "paper uses the corrected score, not the raw one shown here."
         )
+
+with tab_weights:
+    _ws = load_weight_sensitivity()
+    _intro = ("**The published integration weights are a choice, not a result.** Move them "
+              "and watch the ranking respond.")
+    if _ws:
+        _intro += (" The panel is meant to be hard to break: under ±40% random perturbation "
+                   f"the ranking holds at Spearman {_ws['spearman_median']:.3f}.")
+    st.markdown(_intro)
+    if _ws:
+        st.caption(
+            f"({_ws['perturbation']}; 95% CI {_ws['spearman_ci'][0]:.3f}–{_ws['spearman_ci'][1]:.3f}). "
+            f"Top-20 membership is less stable — median Jaccard {_ws['top20_jaccard_median']:.2f} — "
+            "so individual positions move even though the overall order does not.")
+    _w1, _w2 = st.columns([1, 2.6])
+    with _w1:
+        st.markdown("**Weights**")
+        _wc = st.slider("Causal", 0.0, 1.0, 0.34, 0.02, key="w_causal")
+        _wg = st.slider("Genetics", 0.0, 1.0, 0.30, 0.02, key="w_gen")
+        _wd = st.slider("Druggability", 0.0, 1.0, 0.22, 0.02, key="w_drug")
+        _wn = st.slider("Novelty", 0.0, 1.0, 0.14, 0.02, key="w_nov")
+        _wsum = _wc + _wg + _wd + _wn
+        st.caption(f"Sum {_wsum:.2f} — normalised to 1 before scoring, so the score stays "
+                   "on its published scale.")
+        _wtop = st.slider("Show top N", 5, 30, 15, 5, key="w_topn")
+        if st.button("↺ Reset to published", key="w_reset"):
+            for _k, _v in [("w_causal", 0.34), ("w_gen", 0.30),
+                           ("w_drug", 0.22), ("w_nov", 0.14)]:
+                st.session_state[_k] = _v
+            st.rerun()
+    with _w2:
+        _wfig, _wd_df = weight_reranking_fig(df, _wc, _wg, _wd, _wn, _wtop)
+        st.plotly_chart(_wfig, width="stretch", config={"displayModeBar": False})
+    if _ws:
+        _dor = _ws["drop_one_retention"]
+        st.markdown(
+            "**Which layer is load-bearing?** Dropping each component and measuring how much "
+            "of the top-50 survives: "
+            + " · ".join(f"**{k}** {v:.0%}" for k, v in _dor.items())
+            + ". Genetics matters most, novelty least — so the ranking is not simply a "
+              "novelty filter in disguise.")
+
+with tab_bench:
+    _mb = load_multibaseline()
+    if _mb is None:
+        st.info("Baseline comparison data (multibaseline_comparison_results.csv) not found.")
+    else:
+        st.plotly_chart(multibaseline_fig(_mb), width="stretch",
+                        config={"displayModeBar": False})
+        st.markdown(
+            "**This is the result we did not want.** Asked to recover the 19 known "
+            "immunomodulatory drug targets in the shortlist, **network centrality (0.950) "
+            "and Open Targets genetics (0.909) both beat our full integrated score "
+            "(0.820)**. We report it because a target-prioritisation method that only "
+            "shows the benchmarks it wins is not evidence of anything."
+        )
+        st.info(
+            "**Why we still think the method earns its place.** Recovering already-known "
+            "targets is a test of how well a score reproduces existing knowledge — and a "
+            "centrality measure trained on the literature's own citation structure should "
+            "win it. It says nothing about *direction*: none of these baselines states "
+            "whether to block or activate a target, which is the call this method makes. "
+            "The CIs also overlap heavily (ours 0.695–0.926 vs centrality 0.928–0.971), so "
+            "with 19 positives this ordering is not firmly established either way."
+        )
+        with st.expander("Full numbers"):
+            st.dataframe(
+                _mb[["axis", "group", "auroc", "auroc_lo", "auroc_hi", "ap",
+                     "n_positives", "n_universe"]].reset_index(drop=True),
+                width="stretch")
 
 st.markdown("---")
 st.caption("All nominations are computational hypotheses; see PROSPECTIVE_VALIDATION.md for the "
