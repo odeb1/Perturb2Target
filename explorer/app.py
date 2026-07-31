@@ -36,6 +36,7 @@ C_BRAKE = "#1a7f9e"    # brake_agonize (activate) — teal
 C_BG = "#f5f7fa"       # app background (light)
 C_PANEL = "#ffffff"    # plot / card background
 C_INK = "#1b2733"      # primary text
+C_OXFORD = "#002147"   # Oxford Blue — banner / brand
 C_STRUCT_BG = "0xeef2f7"  # 3D viewer background (light)
 
 # ----------------------------------------------------------------------------- data
@@ -922,14 +923,19 @@ st.set_page_config(page_title="Perturb2Target Explorer", layout="wide", page_ico
 st.markdown(f"""
 <style>
   .stApp {{ background: {C_BG}; }}
-  .hero {{ background: linear-gradient(105deg,#1a7f9e 0%,#12506a 100%);
+  /* Banner in Oxford Blue (#002147). The second gradient stop is a marginally
+     lighter shade of the same hue, so the panel keeps some depth while reading
+     as a single Oxford Blue field rather than a two-colour wash. */
+  .hero {{ background: linear-gradient(105deg,{C_OXFORD} 0%,#01305f 100%);
            border-radius:14px; padding:20px 26px; margin-bottom:14px;
-           box-shadow:0 2px 10px rgba(18,80,106,0.18); }}
+           box-shadow:0 2px 10px rgba(0,33,71,0.28); }}
   .hero h1 {{ margin:0; font-size:30px; color:#ffffff; letter-spacing:-0.5px; }}
-  .hero p  {{ margin:6px 0 0 0; color:#dbeef4; font-size:14px; }}
+  /* Subtitle retuned from the old cyan tint to a neutral blue-grey: on Oxford Blue
+     it keeps a 10:1 contrast ratio and no longer carries the teal cast. */
+  .hero p  {{ margin:6px 0 0 0; color:#ccdcea; font-size:14px; }}
   .kpi {{ background:{C_PANEL}; border:1px solid #dfe6ee; border-radius:12px;
           padding:14px 16px; text-align:center; box-shadow:0 1px 4px rgba(27,39,51,0.06); }}
-  .kpi .v {{ font-size:26px; font-weight:700; color:#12506a; }}
+  .kpi .v {{ font-size:26px; font-weight:700; color:{C_OXFORD}; }}
   .kpi .l {{ font-size:12px; color:#5a6b7b; margin-top:2px; }}
   .pill {{ display:inline-block; padding:2px 10px; border-radius:12px; font-size:12px;
            font-weight:600; color:white; }}
