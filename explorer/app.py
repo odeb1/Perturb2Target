@@ -1378,8 +1378,25 @@ st.markdown(f"""
         background:#eef3f9 !important; color:{C_OXFORD} !important; }}
   div[data-baseweb="popover"] ul, div[data-baseweb="popover"] div[role="listbox"] {{
         background:#ffffff !important; border:1px solid #cdd8e4 !important; }}
+  /* Selected-value chips in the multiselects. Brass fill with near-black text was left over
+     from when the fields were dark; on the white field it read as a highlighter marking.
+     Now a pale tint with Oxford-blue text, plus a border so the chip boundary still reads
+     against white (tint alone separates only 1.12:1). Explicit padding and overflow:visible
+     because the label was clipping its first characters ("ultiple sclerosis", "rong"). */
   section[data-testid="stSidebar"] [data-baseweb="tag"] {{
-        background:{C_BRASS} !important; border-radius:2px !important; color:#1b1206 !important; }}
+        background:#eef3f9 !important; border:1px solid #cdd8e4 !important;
+        border-radius:2px !important; color:{C_OXFORD} !important;
+        padding:1px 5px 1px 7px !important; margin:2px 4px 2px 0 !important;
+        max-width:none !important; overflow:visible !important; }}
+  section[data-testid="stSidebar"] [data-baseweb="tag"] span,
+  section[data-testid="stSidebar"] [data-baseweb="tag"] div {{
+        color:{C_OXFORD} !important; -webkit-text-fill-color:{C_OXFORD} !important;
+        overflow:visible !important; text-overflow:clip !important;
+        max-width:none !important; font-size:12px !important; }}
+  section[data-testid="stSidebar"] [data-baseweb="tag"] svg {{
+        fill:{C_OXFORD_LT} !important; }}
+  section[data-testid="stSidebar"] [data-baseweb="tag"]:hover svg {{
+        fill:{C_DRIVER} !important; }}
   /* ---------- tabs ---------- */
   .stTabs [data-baseweb="tab-list"] {{ gap:2px; border-bottom:1px solid {C_LINE}; }}
   .stTabs [data-baseweb="tab"] {{ height:41px; padding:0 17px; background:transparent;
