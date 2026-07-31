@@ -444,17 +444,35 @@ PARSE_SYS = (
     "Use disease_contains only for a disease outside that list. Never invent gene names."
 )
 
+def _secret(name, default=None):
+    """Read a setting from Streamlit secrets first, then the environment.
+
+    Both paths are needed. Locally the natural way to pass a key is an environment
+    variable; on Streamlit Community Cloud the key is entered in the app's Secrets
+    panel, which populates st.secrets. Streamlit does mirror root-level secrets into
+    os.environ, but that has been unreliable across Cloud versions, so we read
+    st.secrets explicitly rather than depending on the mirroring.
+    """
+    try:
+        if name in st.secrets:
+            return st.secrets[name]
+    except Exception:
+        # No secrets.toml present at all -- normal for a plain local run.
+        pass
+    return os.environ.get(name, default)
+
+
 def get_client():
-    key = os.environ.get("ANTHROPIC_API_KEY")
+    key = _secret("ANTHROPIC_API_KEY")
     if not key:
         return None
     try:
         import anthropic
-        return anthropic.Anthropic(api_key=key)
+        return anthropic.Anthropic(api_key=str(key).strip())
     except Exception:
         return None
 
-MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-3-5-haiku-latest")
+MODEL = _secret("ANTHROPIC_MODEL", "claude-3-5-haiku-latest")
 
 def nl_to_spec(client, query):
     msg = client.messages.create(
@@ -903,13 +921,32 @@ with st.sidebar:
 
     st.markdown("---")
     st.caption("Structures load from the bundled set (offline); missing ones fall back to AlphaFold DB. "
-               "Natural-language box needs ANTHROPIC_API_KEY.")
+               "Natural-language box needs an ANTHROPIC_API_KEY — on Streamlit Cloud set it in "
+               "Settings → Secrets; locally export it or use .streamlit/secrets.toml.")
 
 # natural-language query box
 st.markdown("#### 🔎 Ask in plain language")
 if client is None:
-    st.info("Set ANTHROPIC_API_KEY before launching to enable the natural-language box. "
-            "The sidebar filters work fully without it.")
+    with st.expander("💬 Natural-language search is off — how to enable it", expanded=False):
+        st.markdown(
+            "Every filter and figure in this app works without an API key. "
+            "The key only powers the optional plain-language search box and the "
+            "per-gene explanations.\n\n"
+            "**On Streamlit Community Cloud** (this deployment): open your app at "
+            "share.streamlit.io → **⋮ → Settings → Secrets**, then add\n"
+            "```toml\n"
+            'ANTHROPIC_API_KEY = "sk-ant-..."\n'
+            "```\n"
+            "Save; the app reboots automatically with the key available.\n\n"
+            "**Running locally** — either export it in the shell first:\n"
+            "```bash\n"
+            'export ANTHROPIC_API_KEY="sk-ant-..."\n'
+            "streamlit run app.py\n"
+            "```\n"
+            "or create `.streamlit/secrets.toml` next to `app.py` with the same "
+            "`ANTHROPIC_API_KEY = \"sk-ant-...\"` line. Keep that file out of git.\n\n"
+            "Get a key from console.anthropic.com → API keys."
+        )
 nlq = st.text_input(
     "e.g. 'brake-agonize kinases with strong asthma genetics and a clean patent space'",
     disabled=(client is None), label_visibility="collapsed")
@@ -1056,7 +1093,7 @@ if n:
     with cC:
         st.caption("Plain-language rationale — generated only from this gene's evidence row")
         if client is None:
-            st.info("Enable ANTHROPIC_API_KEY for a grounded explanation.")
+            st.info("Add an ANTHROPIC_API_KEY (see the note under the search box) for a grounded explanation.")
         elif st.button("💬 Explain with Claude", key="explain"):
             with st.spinner("Generating from the gene's evidence…"):
                 st.markdown(explain_gene(client, row))
