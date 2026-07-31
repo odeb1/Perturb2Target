@@ -10,6 +10,9 @@ in front of them.
 ### Visuals (what a judge sees)
 
 - **KPI cards** — live counts (nominations / novel-undrugged / strong-genetics / druggable) that update with every filter.
+- **Disease filter (top of the sidebar)** — a pick-list of **19 disease groups** covering **every** disease term present in the annotation, so nothing is unreachable: all 200 shortlist entries that carry an Open Targets disease association are selectable. Autoimmune and allergic groups lead the list (MS, RA, T1D, IBD, asthma/allergy, SLE, psoriasis, autoimmune thyroid, ankylosing spondylitis, vitiligo/alopecia, other autoimmune); the remaining groups exist because the annotation contains them — primary immunodeficiency, neurodegenerative disease (38 genes, the largest single category), neuropsychiatric, haematological malignancy, solid tumour, metabolic, cardiovascular, and a rare/Mendelian catch-all. Groups collapse synonymous terms, so *Crohn disease*, *ulcerative colitis* and *colitis* all sit under inflammatory bowel disease.
+  A separate checkbox restricts to the 11 MS genes from the patient-derived signature analysis — a non-overlapping line of evidence from the Open Targets MS annotation. The free-text box resolves abbreviations and categories (MS, RA, T1D, IBD, SLE, T2D, neurodegenerative, Alzheimer, leukaemia, cancer, immunodeficiency) to the same groups; unrecognised text falls back to a word-boundary match, so "RA" no longer matches inside *random*.
+  Disease coverage is sparse by nature: only 200 of 1,923 shortlist entries carry any scored disease association, so selecting a disease narrows the list sharply. The app states this inline whenever a disease filter is active, so an empty table reads as "no *anchored* target matched" rather than "no target is relevant".
 - **Directional map** (hero tab) — interactive Plotly scatter of every matching target: x = causal directional strength, y = human-genetics support, bubble size = integrated score, colour = direction (red = block a driver, teal = activate a brake). Hover for gene, rank, disease.
 - **Context dynamics** (hero tab) — the map *animated* across Rest → Stim8hr → Stim48hr with a ▶ Play button, so targets visibly move as the T cell activates — the project's context-specificity claim, live.
 - **Method funnel** (hero tab) — an *animated* cascade: 11,526 genes screened → 1,923 with directional signal → 374 druggable → 150 genetics-anchored → 86 novel → 6 leads. Press ▶ to watch the genome narrow to the shortlist, one filter at a time (each stage a strict subset of the one above).
@@ -53,12 +56,73 @@ the same honesty discipline the whole project rests on.
 
 ```bash
 pip install -r requirements.txt
-export ANTHROPIC_API_KEY=sk-...     # OPTIONAL — app works fully without it
 streamlit run app.py
 ```
 
 Then open the URL Streamlit prints (usually http://localhost:8501).
-Set `ANTHROPIC_MODEL` to override the default (`claude-3-5-haiku-latest`).
+
+## API key (optional)
+
+Every filter, figure and structure view works **without** a key. A key only enables
+two optional extras: the plain-language search box and the per-gene explanations.
+
+The app looks for `ANTHROPIC_API_KEY` in Streamlit secrets first, then in the
+environment, so either of these works.
+
+**Streamlit Community Cloud** — the hosted deployment. Open the app on
+share.streamlit.io, then **⋮ → Settings → Secrets**, and add:
+
+```toml
+ANTHROPIC_API_KEY = "sk-ant-..."
+```
+
+Save. The app reboots automatically and picks the key up. Do not commit the key to
+the repository; the Secrets panel is the only place it needs to exist.
+
+**Locally** — either export it before launching:
+
+```bash
+export ANTHROPIC_API_KEY="sk-ant-..."
+streamlit run app.py
+```
+
+or copy `.streamlit/secrets.toml.example` to `.streamlit/secrets.toml` and fill in
+the key there. That path is gitignored, so a real key cannot be committed by accident.
+
+**Model selection is automatic.** The app calls the models endpoint with your key and
+picks the cheapest suitable model available to it (Haiku-class first, falling back to
+Sonnet then Opus), so a retired model id cannot break the app. Set `ANTHROPIC_MODEL` in
+secrets only if you want to pin a specific one — a pinned value always wins, and a stale
+pin will produce a 404, so prefer leaving it unset.
+Keys come from console.anthropic.com → API keys.
+
+## What you can ask in plain language
+
+The parser reads four dimensions at once — **direction**, **disease**, **protein class**
+and **activation context** — plus `novel`, `druggable`, `strong genetics` and `top N`.
+Every example below was run through the real parser and filter; the count is what it
+actually returns on the 1,923-target shortlist.
+
+| Question | Returns |
+|---|---|
+| "Novel undrugged targets for type 1 diabetes" | 4 — CTSH, ACAP1, CPEB3, SLC25A37 |
+| "Which multiple sclerosis targets should I block?" | 7 — IL2RA, TBX21, STAT1, BATF … |
+| "IBD drivers with strong genetics that are druggable" | 8 — IL10RB, ADAM17, PPP5C, DAGLB … |
+| "What should I activate in psoriasis?" | 3 — ITGAL, TNFAIP3, PPIF |
+| "Brake-agonize kinases with strong asthma genetics and a clean patent space" | 1 — SIK2 |
+| "Show me transcription factors that act as brakes at rest" | 13 |
+| "Top 10 druggable rheumatoid arthritis targets" | 2 — IL6R, CD2 |
+| "Neurodegenerative disease targets in this screen" | 38 |
+| "Targets that peak only after 48 hours of stimulation" | 603 |
+| "Kinases and GPCRs I could inhibit in lupus" | **0** — no SLE-anchored kinase or GPCR exists |
+
+The last row is deliberate: an empty result is a real answer. No lupus-anchored target in
+this shortlist is a kinase or GPCR, and the app says so rather than silently showing nothing.
+
+Vocabulary the parser maps: *antagonize / block / inhibit / driver* → block a driver;
+*agonize / activate / potentiate / brake* → activate a brake; *novel / undrugged / clean
+patent space* → novelty filter; disease abbreviations MS, RA, T1D, IBD, SLE, T2D and
+category words (neurodegenerative, leukaemia, cancer, immunodeficiency) all resolve.
 
 ## Demo script (90 seconds)
 
