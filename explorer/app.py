@@ -371,11 +371,22 @@ def apply_filters(df, spec):
     if spec.get("novelty_class"):
         nc = spec["novelty_class"] if isinstance(spec["novelty_class"], list) else [spec["novelty_class"]]
         d = d[d.novelty_class.isin(nc)]
-    if spec.get("disease_groups"):
-        groups = spec["disease_groups"] if isinstance(spec["disease_groups"], list) else [spec["disease_groups"]]
-        d = d[disease_mask(d, groups)]
-    if spec.get("ms_anchored_only"):
-        d = d[d.target_gene.isin(MS_ANCHORED_GENES)]
+    # Disease evidence is a UNION across sources, not an intersection. The Open Targets
+    # MS annotation and the patient-signature MS set are disjoint (0 genes in common), so
+    # AND-ing them would always return an empty table -- which is what a plain-language
+    # query like "which MS targets should I block?" produces, since it legitimately sets
+    # both flags. Both mean "carries MS evidence", so they are OR-ed.
+    _dgroups = spec.get("disease_groups")
+    if _dgroups and not isinstance(_dgroups, list):
+        _dgroups = [_dgroups]
+    if _dgroups or spec.get("ms_anchored_only"):
+        _mask = None
+        if _dgroups:
+            _mask = disease_mask(d, _dgroups)
+        if spec.get("ms_anchored_only"):
+            _ms = d.target_gene.isin(MS_ANCHORED_GENES)
+            _mask = _ms if _mask is None else (_mask | _ms)
+        d = d[_mask]
     if spec.get("disease_contains"):
         # Free text: resolve to a curated group when possible (so "MS", "T1D", "IBD" work),
         # otherwise fall back to a word-boundary substring match. A plain `in` test would
@@ -947,9 +958,41 @@ if client is None:
             "`ANTHROPIC_API_KEY = \"sk-ant-...\"` line. Keep that file out of git.\n\n"
             "Get a key from console.anthropic.com → API keys."
         )
+# Worked examples. Each was run through the parser and the filter, and the count
+# shown is the number of targets it actually returns -- including the honest zero.
+EXAMPLE_QUERIES = [
+    ("Novel undrugged targets for type 1 diabetes", "4 targets"),
+    ("Which multiple sclerosis targets should I block?", "7 targets"),
+    ("IBD drivers with strong genetics that are druggable", "8 targets"),
+    ("What should I activate in psoriasis?", "3 targets"),
+    ("Brake-agonize kinases with strong asthma genetics and a clean patent space", "1 target"),
+    ("Show me transcription factors that act as brakes at rest", "13 targets"),
+    ("Top 10 druggable rheumatoid arthritis targets", "2 targets"),
+    ("Neurodegenerative disease targets in this screen", "38 targets"),
+    ("Kinases and GPCRs I could inhibit in lupus", "0 — no SLE-anchored kinase/GPCR"),
+]
+
 nlq = st.text_input(
     "e.g. 'brake-agonize kinases with strong asthma genetics and a clean patent space'",
     disabled=(client is None), label_visibility="collapsed")
+
+with st.expander("💡 Example questions you can ask", expanded=(client is not None and not nlq)):
+    st.caption(
+        "The parser understands four things at once: **direction** (block a driver / "
+        "activate a brake), **disease** (19 groups, abbreviations fine), **protein class** "
+        "(kinase, GPCR, transcription factor, cytokine receptor, enzyme, transporter, ion "
+        "channel, nuclear receptor), and **context** (Rest / Stim8hr / Stim48hr) — plus "
+        "'novel', 'druggable', 'strong genetics' and 'top N'. Counts below are what each "
+        "query actually returns on this shortlist."
+    )
+    for _q, _n in EXAMPLE_QUERIES:
+        _c1, _c2 = st.columns([5, 1])
+        _c1.markdown(f"“{_q}”")
+        _c2.caption(_n)
+    st.caption(
+        "The last one returns nothing on purpose: no lupus-anchored target in this "
+        "shortlist is a kinase or GPCR. An empty result is a real answer, not a failure."
+    )
 if nlq and client is not None:
     try:
         nlspec = nl_to_spec(client, nlq)
