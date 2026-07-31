@@ -205,21 +205,92 @@ MS_ANCHORED_GENES = load_ms_anchored()
 # match is an equality test on a controlled vocabulary rather than a substring guess.
 # Built by enumerating the 145 distinct disease strings actually present in the data.
 DISEASE_GROUPS = {
-    "Multiple sclerosis": ["multiple sclerosis", "autoimmune disorder of central nervous system"],
-    "Rheumatoid arthritis": ["rheumatoid arthritis"],
-    "Type 1 diabetes": ["type 1 diabetes mellitus"],
-    "Inflammatory bowel disease": ["inflammatory bowel disease", "inflammatory bowel disease 25",
-                                   "crohn disease", "ulcerative colitis", "colitis",
-                                   "neonatal inflammatory skin and bowel disease"],
-    "Asthma / allergy": ["asthma", "childhood onset asthma",
-                         "asthma, nasal polyps, and aspirin intolerance",
-                         "allergic rhinitis", "atopic eczema"],
-    "Systemic lupus erythematosus": ["systemic lupus erythematosus", "familial chilblain lupus"],
-    "Psoriasis / psoriatic arthritis": ["psoriasis", "psoriasis vulgaris", "psoriatic arthritis"],
-    "Autoimmune thyroid disease": ["hashimoto thyroiditis", "graves disease",
-                                   "autoimmune thyroid disease", "hypothyroidism"],
-    "Ankylosing spondylitis": ["ankylosing spondylitis"],
-    "Vitiligo / alopecia areata": ["vitiligo", "alopecia areata"],
+    "Multiple sclerosis": [
+        "autoimmune disorder of central nervous system", "multiple sclerosis"],
+    "Rheumatoid arthritis": [
+        "rheumatoid arthritis"],
+    "Type 1 diabetes": [
+        "type 1 diabetes mellitus"],
+    "Inflammatory bowel disease": [
+        "colitis", "crohn disease", "inflammatory bowel disease", "inflammatory bowel disease 25",
+        "neonatal inflammatory skin and bowel disease", "ulcerative colitis"],
+    "Asthma / allergy": [
+        "allergic rhinitis", "asthma", "asthma, nasal polyps, and aspirin intolerance",
+        "atopic eczema", "childhood onset asthma"],
+    "Systemic lupus erythematosus": [
+        "familial chilblain lupus", "systemic lupus erythematosus"],
+    "Psoriasis / psoriatic arthritis": [
+        "psoriasis", "psoriasis vulgaris", "psoriatic arthritis"],
+    "Autoimmune thyroid disease": [
+        "autoimmune thyroid disease", "graves disease", "hashimoto thyroiditis",
+        "hypoparathyroidism-deafness-renal disease syndrome", "hypothyroidism"],
+    "Ankylosing spondylitis": [
+        "ankylosing spondylitis"],
+    "Vitiligo / alopecia areata": [
+        "alopecia areata", "vitiligo"],
+    "Other autoimmune / inflammatory": [
+        "autoinflammatory syndrome, familial, behcet-like 1", "immunodeficiency 87 and autoimmunity",
+        "mixed connective tissue disease"],
+    "Primary immunodeficiency": [
+        "autosomal dominant hyper-ige syndrome", "chronic mucocutaneous candidosis",
+        "combined immunodeficiency due to stim1 deficiency",
+        "cryptosporidiosis - chronic cholangitis - liver disease",
+        "growth hormone insensitivity with immune dysregulation 1, autosomal recessive",
+        "hepatic veno-occlusive disease-immunodeficiency syndrome", "herpetic encephalitis",
+        "hyper-ige syndrome 6, autosomal dominant, with recurrent infections", "immunodeficiency 32b",
+        "immunodeficiency 39", "immunodeficiency 69", "immunodeficiency due to cd25 deficiency",
+        "neutropenia", "neutropenia, severe congenital, 8, autosomal dominant"],
+    "Neurodegenerative disease": [
+        "early-onset parkinsonism-intellectual disability syndrome",
+        "global developmental delay, progressive ataxia, and elevated glutamine",
+        "neurodegenerative disease"],
+    "Neuropsychiatric / behavioural": [
+        "alcohol drinking", "mathematical ability", "schizophrenia", "smoking initiation"],
+    "Haematological malignancy": [
+        "acute myeloid leukemia", "acute myeloid leukemia with minimal differentiation",
+        "acute promyelocytic leukemia", "b-cell chronic lymphocytic leukemia", "burkitt lymphoma",
+        "chronic myelogenous leukemia, bcr-abl1 positive", "diffuse large b-cell lymphoma",
+        "juvenile myelomonocytic leukemia", "lymphoproliferative syndrome 1", "plasma cell myeloma"],
+    "Cancer (solid tumour)": [
+        "cancer", "gastric carcinoma", "head and neck squamous cell carcinoma", "melanoma",
+        "ovarian neoplasm", "urinary bladder cancer"],
+    "Metabolic trait / disease": [
+        "congenital disorder of glycosylation with defective fucosylation",
+        "congenital disorder of glycosylation, type 2v", "congenital generalized lipodystrophy type 4",
+        "metabolic disease", "metabolic syndrome", "rft1-congenital disorder of glycosylation",
+        "type 2 diabetes mellitus"],
+    "Cardiovascular / haemostatic": [
+        "atrial fibrillation", "coronary artery disorder", "hypertensive disorder", "preeclampsia",
+        "pulmonary arterial hypertension", "stroke disorder", "varicose veins",
+        "venous thromboembolism"],
+    "Other rare / Mendelian": [
+        "abnormality of the skeletal system", "aging", "azoospermia", "bardet-biedl syndrome 12",
+        "bardet-biedl syndrome 7", "brooke-spiegler syndrome", "cataract",
+        "charcot-marie-tooth disease type 1c", "combined oxidative phosphorylation defect type 13",
+        "combined oxidative phosphorylation defect type 4", "cone rod dystrophy", "costello syndrome",
+        "cystathioninuria", "cytosolic phospholipase-a2 alpha deficiency associated bleeding disorder",
+        "darier disease", "decreased total leukocyte count",
+        "disabling pansclerotic morphea of childhood", "distal hereditary motor neuropathy type 2",
+        "emery-dreifuss muscular dystrophy", "familial cerebral saccular aneurysm",
+        "fontaine progeroid syndrome", "galloway-mowat syndrome 10", "gastrointestinal disease",
+        "glycogen storage disease vii", "glycosuria", "gout",
+        "hereditary combined deficiency of vitamin k-dependent clotting factors",
+        "hereditary spastic paraplegia 15", "hiv infectious disease", "holoprosencephaly",
+        "houge-janssens syndrome 4", "intellectual disability, autosomal dominant 14",
+        "isolated coq-cytochrome c reductase deficiency", "isolated sulfite oxidase deficiency",
+        "joubert syndrome", "juvenile polyposis syndrome", "lymphatic system disorder",
+        "lynch syndrome", "mitochondrial complex i deficiency", "multiple endocrine neoplasia type 1",
+        "myopathy, tubular aggregate, 1", "neurofibromatosis type 1", "noonan syndrome",
+        "osteoarthritis, hip", "osteoarthritis, knee", "osteogenesis imperfecta, type 21",
+        "osteopetrosis, autosomal dominant 3", "poisoning", "polycystic liver disease 1",
+        "polycystic ovary syndrome", "precordial pain", "primary biliary cholangitis",
+        "primary ciliary dyskinesia",
+        "pulmonary fibrosis and/or bone marrow failure syndrome, telomere-related, 7",
+        "ribose-5-p isomerase deficiency", "rubinstein-taybi syndrome due to crebbp mutations",
+        "schinzel-giedion syndrome", "spina bifida",
+        "sting-associated vasculopathy with onset in infancy",
+        "syndromic x-linked intellectual disability snyder type", "synovium disorder",
+        "woodhouse-sakati syndrome"],
 }
 
 # Free-text synonyms -> canonical group, so "MS", "T1D", "IBD", "SLE" all work.
@@ -241,6 +312,20 @@ DISEASE_ALIASES = {
     "graves": "Autoimmune thyroid disease", "hypothyroidism": "Autoimmune thyroid disease",
     "as": "Ankylosing spondylitis", "ankylosing spondylitis": "Ankylosing spondylitis",
     "vitiligo": "Vitiligo / alopecia areata", "alopecia": "Vitiligo / alopecia areata",
+    # broader disease categories
+    "neurodegenerative": "Neurodegenerative disease", "neurodegeneration": "Neurodegenerative disease",
+    "alzheimer": "Neurodegenerative disease", "parkinson": "Neurodegenerative disease",
+    "als": "Neurodegenerative disease", "dementia": "Neurodegenerative disease",
+    "leukemia": "Haematological malignancy", "leukaemia": "Haematological malignancy",
+    "lymphoma": "Haematological malignancy", "myeloma": "Haematological malignancy",
+    "cancer": "Cancer (solid tumour)", "tumour": "Cancer (solid tumour)",
+    "tumor": "Cancer (solid tumour)", "immunodeficiency": "Primary immunodeficiency",
+    "pid": "Primary immunodeficiency", "t2d": "Metabolic trait / disease",
+    "type 2 diabetes": "Metabolic trait / disease", "obesity": "Metabolic trait / disease",
+    "metabolic": "Metabolic trait / disease", "cardiovascular": "Cardiovascular / haemostatic",
+    "hypertension": "Cardiovascular / haemostatic", "schizophrenia": "Neuropsychiatric / behavioural",
+    "celiac": "Other autoimmune / inflammatory", "coeliac": "Other autoimmune / inflammatory",
+    "sjogren": "Other autoimmune / inflammatory", "scleroderma": "Other autoimmune / inflammatory"
 }
 
 
@@ -327,17 +412,17 @@ FILTER_TOOL = {
             "druggable_only": {"type": "boolean"},
             "novel_only": {"type": "boolean"},
             "disease_groups": {"type": "array", "items": {"type": "string", "enum": [
-                "Multiple sclerosis",
-                "Rheumatoid arthritis",
-                "Type 1 diabetes",
-                "Inflammatory bowel disease",
-                "Asthma / allergy",
-                "Systemic lupus erythematosus",
-                "Psoriasis / psoriatic arthritis",
-                "Autoimmune thyroid disease",
-                "Ankylosing spondylitis",
-                "Vitiligo / alopecia areata"]},
-                "description": "Curated disease anchor groups. Prefer this over disease_contains."},
+                "Multiple sclerosis", "Rheumatoid arthritis",
+                "Type 1 diabetes", "Inflammatory bowel disease",
+                "Asthma / allergy", "Systemic lupus erythematosus",
+                "Psoriasis / psoriatic arthritis", "Autoimmune thyroid disease",
+                "Ankylosing spondylitis", "Vitiligo / alopecia areata",
+                "Other autoimmune / inflammatory", "Primary immunodeficiency",
+                "Neurodegenerative disease", "Neuropsychiatric / behavioural",
+                "Haematological malignancy", "Cancer (solid tumour)",
+                "Metabolic trait / disease", "Cardiovascular / haemostatic",
+                "Other rare / Mendelian"]},
+                "description": "Curated disease anchor groups covering every disease term in the data. Prefer this over disease_contains."},
             "ms_anchored_only": {"type": "boolean",
                 "description": "True only when the user asks for multiple-sclerosis genes from the patient-signature analysis."},
             "disease_contains": {"type": "string", "description": "a SPECIFIC disease name only (asthma, rheumatoid arthritis, type 1 diabetes, lupus, IBD, psoriasis). NOT generic words like 'inflammation' or 'immune'."},
@@ -775,6 +860,33 @@ st.markdown("""
 with st.sidebar:
     st.header("Filters")
     spec = {}
+
+    # --- Disease first: it is the filter most users reach for, and it is the one that
+    # --- most sharply changes the result set, so it leads the panel.
+    st.markdown("### 🩺 Disease")
+    dis_groups = st.multiselect(
+        "Disease anchor (Open Targets)", list(DISEASE_GROUPS.keys()),
+        help="Filters on each target's Open Targets disease association. Every disease "
+             "term present in the data belongs to exactly one group here, so nothing is "
+             "unreachable. Groups collapse synonyms (Crohn / ulcerative colitis / colitis "
+             "all sit under inflammatory bowel disease). Autoimmune and allergic groups "
+             "are listed first because they are this project's focus; the remaining "
+             "groups exist because the underlying annotation contains them.")
+    if dis_groups: spec["disease_groups"] = dis_groups
+    if MS_ANCHORED_GENES:
+        if st.checkbox(f"MS-anchored genes only ({len(MS_ANCHORED_GENES)})",
+                       help="Genes carrying multiple sclerosis evidence from the "
+                            "patient-derived signature analysis. This is a separate, "
+                            "non-overlapping line of evidence from the Open Targets "
+                            "MS annotation above."):
+            spec["ms_anchored_only"] = True
+    disease = st.text_input("…or type a disease",
+                            help="Accepts abbreviations and categories: MS, RA, T1D, IBD, "
+                                 "SLE, T2D, neurodegenerative, leukaemia, cancer.")
+    if disease.strip(): spec["disease_contains"] = disease.strip()
+
+    st.markdown("---")
+    st.markdown("### Direction & biology")
     dsel = st.selectbox("Direction", ["(any)", "driver_antagonize (block a driver)", "brake_agonize (activate a brake)"])
     if dsel.startswith("driver"): spec["direction"] = "driver_antagonize"
     elif dsel.startswith("brake"): spec["direction"] = "brake_agonize"
@@ -786,27 +898,9 @@ with st.sidebar:
     if cond != "(any)": spec["condition"] = cond
     if st.checkbox("Druggable only"): spec["druggable_only"] = True
     if st.checkbox("Novel / undrugged only"): spec["novel_only"] = True
-    st.markdown("**Disease**")
-    dis_groups = st.multiselect(
-        "Disease anchor (Open Targets)", list(DISEASE_GROUPS.keys()),
-        help="Filters on the Open Targets disease association for each target. "
-             "Coverage is deliberately sparse: only genes with a scored disease "
-             "association carry an anchor, so selecting a disease narrows the list "
-             "sharply. Groups collapse synonymous terms (e.g. Crohn / ulcerative "
-             "colitis / colitis all sit under inflammatory bowel disease).")
-    if dis_groups: spec["disease_groups"] = dis_groups
-    if MS_ANCHORED_GENES:
-        if st.checkbox(f"MS-anchored genes only ({len(MS_ANCHORED_GENES)})",
-                       help="Genes carrying multiple sclerosis evidence from the "
-                            "patient-derived signature analysis. This is a separate, "
-                            "non-overlapping line of evidence from the Open Targets "
-                            "MS annotation above."):
-            spec["ms_anchored_only"] = True
-    disease = st.text_input("…or type a disease",
-                            help="Accepts abbreviations: MS, RA, T1D, IBD, SLE.")
-    if disease.strip(): spec["disease_contains"] = disease.strip()
     maxrank = st.number_input("Max rank (0 = no limit)", min_value=0, max_value=1923, value=0)
     if maxrank > 0: spec["max_rank"] = int(maxrank)
+
     st.markdown("---")
     st.caption("Structures load from the bundled set (offline); missing ones fall back to AlphaFold DB. "
                "Natural-language box needs ANTHROPIC_API_KEY.")
