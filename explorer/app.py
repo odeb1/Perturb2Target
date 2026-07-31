@@ -1042,7 +1042,11 @@ st.markdown(f"""
                     text-transform:uppercase; color:{C_BRASS}; margin:0 0 9px 0; }}
   .hero h1 {{ font-family:{FONT_DISPLAY}; font-weight:700; margin:0; font-size:35px;
               color:#ffffff; letter-spacing:-0.4px; line-height:1.12; }}
-  .hero .rule {{ width:52px; height:2px; background:{C_BRASS}; margin:15px 0 13px 0;
+  /* Author byline: set in the display serif at a size that reads as attribution under the
+     wordmark rather than as a second heading. 13.7:1 on Oxford Blue. */
+  .hero .byline {{ font-family:{FONT_DISPLAY}; font-size:14.5px; font-weight:600;
+                   color:#e7eef6; margin:9px 0 0 0; letter-spacing:0.2px; }}
+  .hero .rule {{ width:52px; height:2px; background:{C_BRASS}; margin:14px 0 13px 0;
                  border-radius:2px; }}
   .hero p {{ margin:0; color:#c6d6e6; font-size:13.5px; line-height:1.62; max-width:66em;
              font-weight:400; }}
@@ -1140,6 +1144,7 @@ st.markdown("""
 <div class="hero">
   <p class="eyebrow">Directional target nomination &middot; CD4&#8314; T-cell Perturb-seq</p>
   <h1>Perturb2Target</h1>
+  <p class="byline">Oishi Deb &nbsp;&middot;&nbsp; Yizhou Yu</p>
   <div class="rule"></div>
   <p><b>1,923 directional nominations</b> from a genome-scale CRISPRi screen &mdash; each one a
   call to <b>block a driver</b> or <b>activate a brake</b>, anchored in human genetics and
@@ -1195,8 +1200,7 @@ with st.sidebar:
 
     st.markdown("---")
     st.caption("Structures load from the bundled set (offline); missing ones fall back to AlphaFold DB. "
-               "Natural-language box needs an ANTHROPIC_API_KEY — on Streamlit Cloud set it in "
-               "Settings → Secrets; locally export it or use .streamlit/secrets.toml.")
+               "Natural-language box needs an ANTHROPIC_API_KEY")
 
 # natural-language query box
 section("I", "Ask in plain language", "natural-language filter translation")
