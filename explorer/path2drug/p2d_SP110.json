@@ -1,0 +1,78 @@
+{
+ "target": "SP110",
+ "direction": "antagonize",
+ "n_reachable_signature_genes": 48,
+ "top_paths": [
+  {
+   "endpoint": "STAT1",
+   "path": [
+    "SP110",
+    "STAT1"
+   ],
+   "len": 1,
+   "mean_confidence": 0.719
+  },
+  {
+   "endpoint": "STAT3",
+   "path": [
+    "SP110",
+    "STAT1",
+    "STAT3"
+   ],
+   "len": 2,
+   "mean_confidence": 0.859
+  },
+  {
+   "endpoint": "STAT4",
+   "path": [
+    "SP110",
+    "STAT1",
+    "STAT4"
+   ],
+   "len": 2,
+   "mean_confidence": 0.857
+  },
+  {
+   "endpoint": "IL10RA",
+   "path": [
+    "SP110",
+    "STAT1",
+    "JAK1",
+    "IL10RA"
+   ],
+   "len": 3,
+   "mean_confidence": 0.906
+  }
+ ],
+ "intermediate_nodes": [
+  {
+   "gene": "JAK1",
+   "observed": false,
+   "peak_signed_score": null,
+   "direction": null,
+   "peak_emp_fdr": null,
+   "direction_consistent": null,
+   "fdr_significant": null,
+   "edge_zscore_under_target_KD": null,
+   "edge_functionally_confirmed": null,
+   "druggable": {
+    "max_phase": 4,
+    "action": "INHIBITOR"
+   }
+  },
+  {
+   "gene": "STAT1",
+   "observed": true,
+   "peak_signed_score": -0.7040889859199524,
+   "direction": "driver_antagonize",
+   "peak_emp_fdr": 0.0014570319017518142,
+   "direction_consistent": true,
+   "fdr_significant": true,
+   "edge_zscore_under_target_KD": 0.89,
+   "edge_functionally_confirmed": false,
+   "druggable": null
+  }
+ ],
+ "mechanism_backbone": "TARGET SP110 (antagonize) \u2192 CD4 pro-inflammatory program\nDeterministic backbone (STRING confidence-weighted shortest paths):\n  [0.72] SP110 \u2192 STAT1\n  [0.86] SP110 \u2192 STAT1 \u2192 STAT3\n  [0.86] SP110 \u2192 STAT1 \u2192 STAT4\n  [0.91] SP110 \u2192 STAT1 \u2192 JAK1 \u2192 IL10RA\nDruggable / observed intermediate nodes:\n  \u00b7 JAK1 (drug phase 4)\n  \u00b7 STAT1 (KD program -0.70)",
+ "method": "deterministic shortest-path over STRING (confidence-weighted)"
+}

@@ -1,0 +1,135 @@
+{
+ "target": "SETBP1",
+ "direction": "antagonize",
+ "n_reachable_signature_genes": 48,
+ "top_paths": [
+  {
+   "endpoint": "IFNG",
+   "path": [
+    "SETBP1",
+    "CSF3R",
+    "JAK2",
+    "IFNG"
+   ],
+   "len": 3,
+   "mean_confidence": 0.903
+  },
+  {
+   "endpoint": "STAT1",
+   "path": [
+    "SETBP1",
+    "CSF3R",
+    "JAK2",
+    "STAT1"
+   ],
+   "len": 3,
+   "mean_confidence": 0.903
+  },
+  {
+   "endpoint": "IL12RB2",
+   "path": [
+    "SETBP1",
+    "CSF3R",
+    "JAK2",
+    "IL12RB2"
+   ],
+   "len": 3,
+   "mean_confidence": 0.903
+  },
+  {
+   "endpoint": "STAT3",
+   "path": [
+    "SETBP1",
+    "CSF3R",
+    "JAK2",
+    "STAT3"
+   ],
+   "len": 3,
+   "mean_confidence": 0.903
+  }
+ ],
+ "intermediate_nodes": [
+  {
+   "gene": "JAK2",
+   "observed": true,
+   "peak_signed_score": -0.41682377457618713,
+   "direction": "driver_antagonize",
+   "peak_emp_fdr": 0.03469752757597354,
+   "direction_consistent": true,
+   "fdr_significant": true,
+   "edge_zscore_under_target_KD": 0.56,
+   "edge_functionally_confirmed": false,
+   "druggable": {
+    "max_phase": 4,
+    "action": "INHIBITOR"
+   }
+  },
+  {
+   "gene": "CSF3R",
+   "observed": true,
+   "peak_signed_score": 0.3712122142314911,
+   "direction": "brake_agonize",
+   "peak_emp_fdr": 0.08602672942041648,
+   "direction_consistent": false,
+   "fdr_significant": false,
+   "edge_zscore_under_target_KD": null,
+   "edge_functionally_confirmed": null,
+   "druggable": {
+    "max_phase": 4,
+    "action": "AGONIST;ANTAGONIST"
+   }
+  }
+ ],
+ "mechanism_backbone": "TARGET SETBP1 (antagonize) \u2192 CD4 pro-inflammatory program\nDeterministic backbone (STRING confidence-weighted shortest paths):\n  [0.90] SETBP1 \u2192 CSF3R \u2192 JAK2 \u2192 IFNG\n  [0.90] SETBP1 \u2192 CSF3R \u2192 JAK2 \u2192 STAT1\n  [0.90] SETBP1 \u2192 CSF3R \u2192 JAK2 \u2192 IL12RB2\n  [0.90] SETBP1 \u2192 CSF3R \u2192 JAK2 \u2192 STAT3\nDruggable / observed intermediate nodes:\n  \u00b7 JAK2 (drug phase 4, KD program -0.42)\n  \u00b7 CSF3R (drug phase 4, KD program +0.37)",
+ "method": "deterministic shortest-path over STRING (confidence-weighted)",
+ "signed_paths": [
+  {
+   "endpoint": "NFKB1",
+   "path": [
+    "SETBP1",
+    "HOXA9",
+    "NFKB1"
+   ],
+   "len": 2,
+   "net_sign": -1
+  },
+  {
+   "endpoint": "IFNG",
+   "path": [
+    "SETBP1",
+    "HOXA10",
+    "ESR1",
+    "IFNG"
+   ],
+   "len": 3,
+   "net_sign": 1
+  },
+  {
+   "endpoint": "TBX21",
+   "path": [
+    "SETBP1",
+    "HOXA9",
+    "NFKB1",
+    "TBX21"
+   ],
+   "len": 3,
+   "net_sign": -1
+  },
+  {
+   "endpoint": "STAT1",
+   "path": [
+    "SETBP1",
+    "HOXA10",
+    "TP53",
+    "STAT1"
+   ],
+   "len": 3,
+   "net_sign": 1
+  }
+ ],
+ "signed_direction_prediction": {
+  "activation_effect_on_program": -1,
+  "knockdown_effect_on_program": 1,
+  "n_signature_genes_reached": 32
+ }
+}

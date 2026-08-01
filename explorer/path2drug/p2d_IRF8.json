@@ -1,0 +1,121 @@
+{
+ "target": "IRF8",
+ "direction": "agonize",
+ "n_reachable_signature_genes": 48,
+ "top_paths": [
+  {
+   "endpoint": "STAT1",
+   "path": [
+    "IRF8",
+    "STAT1"
+   ],
+   "len": 1,
+   "mean_confidence": 0.904
+  },
+  {
+   "endpoint": "STAT3",
+   "path": [
+    "IRF8",
+    "STAT1",
+    "STAT3"
+   ],
+   "len": 2,
+   "mean_confidence": 0.952
+  },
+  {
+   "endpoint": "STAT4",
+   "path": [
+    "IRF8",
+    "STAT1",
+    "STAT4"
+   ],
+   "len": 2,
+   "mean_confidence": 0.949
+  },
+  {
+   "endpoint": "IFNG",
+   "path": [
+    "IRF8",
+    "STAT1",
+    "JAK2",
+    "IFNG"
+   ],
+   "len": 3,
+   "mean_confidence": 0.967
+  }
+ ],
+ "intermediate_nodes": [
+  {
+   "gene": "JAK2",
+   "observed": true,
+   "peak_signed_score": -0.41682377457618713,
+   "direction": "driver_antagonize",
+   "peak_emp_fdr": 0.03469752757597354,
+   "direction_consistent": false,
+   "fdr_significant": true,
+   "edge_zscore_under_target_KD": 1.68,
+   "edge_functionally_confirmed": false,
+   "druggable": {
+    "max_phase": 4,
+    "action": "INHIBITOR"
+   }
+  },
+  {
+   "gene": "STAT1",
+   "observed": true,
+   "peak_signed_score": -0.7040889859199524,
+   "direction": "driver_antagonize",
+   "peak_emp_fdr": 0.0014570319017518142,
+   "direction_consistent": false,
+   "fdr_significant": true,
+   "edge_zscore_under_target_KD": 0.06,
+   "edge_functionally_confirmed": false,
+   "druggable": null
+  }
+ ],
+ "mechanism_backbone": "TARGET IRF8 (agonize) \u2192 CD4 pro-inflammatory program\nDeterministic backbone (STRING confidence-weighted shortest paths):\n  [0.90] IRF8 \u2192 STAT1\n  [0.95] IRF8 \u2192 STAT1 \u2192 STAT3\n  [0.95] IRF8 \u2192 STAT1 \u2192 STAT4\n  [0.97] IRF8 \u2192 STAT1 \u2192 JAK2 \u2192 IFNG\nDruggable / observed intermediate nodes:\n  \u00b7 JAK2 (drug phase 4, KD program -0.42)\n  \u00b7 STAT1 (KD program -0.70)",
+ "method": "deterministic shortest-path over STRING (confidence-weighted)",
+ "signed_paths": [
+  {
+   "endpoint": "IFNG",
+   "path": [
+    "IRF8",
+    "IFNG"
+   ],
+   "len": 1,
+   "net_sign": 1
+  },
+  {
+   "endpoint": "STAT1",
+   "path": [
+    "IRF8",
+    "STAT1"
+   ],
+   "len": 1,
+   "net_sign": -1
+  },
+  {
+   "endpoint": "TNF",
+   "path": [
+    "IRF8",
+    "TNF"
+   ],
+   "len": 1,
+   "net_sign": 1
+  },
+  {
+   "endpoint": "CCL5",
+   "path": [
+    "IRF8",
+    "CCL5"
+   ],
+   "len": 1,
+   "net_sign": 1
+  }
+ ],
+ "signed_direction_prediction": {
+  "activation_effect_on_program": 1,
+  "knockdown_effect_on_program": -1,
+  "n_signature_genes_reached": 42
+ }
+}

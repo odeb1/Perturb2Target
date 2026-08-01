@@ -1,0 +1,170 @@
+{
+ "target": "RUNX3",
+ "direction": "agonize",
+ "n_reachable_signature_genes": 48,
+ "top_paths": [
+  {
+   "endpoint": "TBX21",
+   "path": [
+    "RUNX3",
+    "TBX21"
+   ],
+   "len": 1,
+   "mean_confidence": 0.991
+  },
+  {
+   "endpoint": "AHR",
+   "path": [
+    "RUNX3",
+    "TBX21",
+    "GATA3",
+    "ESR1",
+    "AHR"
+   ],
+   "len": 4,
+   "mean_confidence": 0.969
+  },
+  {
+   "endpoint": "STAT3",
+   "path": [
+    "RUNX3",
+    "TBX21",
+    "GATA3",
+    "ESR1",
+    "SRC",
+    "STAT3"
+   ],
+   "len": 5,
+   "mean_confidence": 0.994
+  },
+  {
+   "endpoint": "NFKB1",
+   "path": [
+    "RUNX3",
+    "TBX21",
+    "GATA3",
+    "ESR1",
+    "HDAC1",
+    "NFKB1"
+   ],
+   "len": 5,
+   "mean_confidence": 0.993
+  }
+ ],
+ "intermediate_nodes": [
+  {
+   "gene": "SRC",
+   "observed": true,
+   "peak_signed_score": 0.4462193548679352,
+   "direction": "brake_agonize",
+   "peak_emp_fdr": 0.025435727811162986,
+   "direction_consistent": true,
+   "fdr_significant": true,
+   "edge_zscore_under_target_KD": -0.24,
+   "edge_functionally_confirmed": false,
+   "druggable": {
+    "max_phase": 4,
+    "action": "INHIBITOR"
+   }
+  },
+  {
+   "gene": "ESR1",
+   "observed": true,
+   "peak_signed_score": 0.10734662413597107,
+   "direction": "brake_agonize",
+   "peak_emp_fdr": 0.8004826880721826,
+   "direction_consistent": true,
+   "fdr_significant": false,
+   "edge_zscore_under_target_KD": 0.46,
+   "edge_functionally_confirmed": false,
+   "druggable": {
+    "max_phase": 4,
+    "action": "AGONIST;ANTAGONIST;DEGRADER;MODULATOR"
+   }
+  },
+  {
+   "gene": "HDAC1",
+   "observed": true,
+   "peak_signed_score": -0.4384184777736664,
+   "direction": "driver_antagonize",
+   "peak_emp_fdr": 0.16350183850265457,
+   "direction_consistent": false,
+   "fdr_significant": false,
+   "edge_zscore_under_target_KD": -2.19,
+   "edge_functionally_confirmed": true,
+   "druggable": {
+    "max_phase": 4,
+    "action": "INHIBITOR"
+   }
+  },
+  {
+   "gene": "GATA3",
+   "observed": true,
+   "peak_signed_score": 0.8135766983032227,
+   "direction": "brake_agonize",
+   "peak_emp_fdr": 0.004220422735578892,
+   "direction_consistent": true,
+   "fdr_significant": true,
+   "edge_zscore_under_target_KD": -0.85,
+   "edge_functionally_confirmed": false,
+   "druggable": null
+  },
+  {
+   "gene": "TBX21",
+   "observed": true,
+   "peak_signed_score": -1.4742275476455688,
+   "direction": "driver_antagonize",
+   "peak_emp_fdr": 3.759742329962266e-10,
+   "direction_consistent": false,
+   "fdr_significant": true,
+   "edge_zscore_under_target_KD": 0.75,
+   "edge_functionally_confirmed": false,
+   "druggable": null
+  }
+ ],
+ "mechanism_backbone": "TARGET RUNX3 (agonize) \u2192 CD4 pro-inflammatory program\nDeterministic backbone (STRING confidence-weighted shortest paths):\n  [0.99] RUNX3 \u2192 TBX21\n  [0.97] RUNX3 \u2192 TBX21 \u2192 GATA3 \u2192 ESR1 \u2192 AHR\n  [0.99] RUNX3 \u2192 TBX21 \u2192 GATA3 \u2192 ESR1 \u2192 SRC \u2192 STAT3\n  [0.99] RUNX3 \u2192 TBX21 \u2192 GATA3 \u2192 ESR1 \u2192 HDAC1 \u2192 NFKB1\nDruggable / observed intermediate nodes:\n  \u00b7 SRC (drug phase 4, KD program +0.45)\n  \u00b7 ESR1 (drug phase 4, KD program +0.11)\n  \u00b7 HDAC1 (drug phase 4, KD program -0.44)\n  \u00b7 GATA3 (KD program +0.81)\n  \u00b7 TBX21 (KD program -1.47)",
+ "method": "deterministic shortest-path over STRING (confidence-weighted)",
+ "signed_paths": [
+  {
+   "endpoint": "IFNG",
+   "path": [
+    "RUNX3",
+    "IFNG"
+   ],
+   "len": 1,
+   "net_sign": 1
+  },
+  {
+   "endpoint": "CXCL8",
+   "path": [
+    "RUNX3",
+    "CXCL8"
+   ],
+   "len": 1,
+   "net_sign": -1
+  },
+  {
+   "endpoint": "GZMB",
+   "path": [
+    "RUNX3",
+    "GZMB"
+   ],
+   "len": 1,
+   "net_sign": 1
+  },
+  {
+   "endpoint": "PRF1",
+   "path": [
+    "RUNX3",
+    "PRF1"
+   ],
+   "len": 1,
+   "net_sign": 1
+  }
+ ],
+ "signed_direction_prediction": {
+  "activation_effect_on_program": -1,
+  "knockdown_effect_on_program": 1,
+  "n_signature_genes_reached": 41
+ }
+}

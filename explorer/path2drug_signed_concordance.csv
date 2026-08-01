@@ -1,0 +1,11 @@
+tf,n_reach,pred_activation_effect,pred_KD_effect,obs_KD_dir,concordant
+IRF8,42,1.0,-1.0,1,False
+STAT4,41,1.0,-1.0,-1,True
+TBX21,42,1.0,-1.0,-1,True
+GATA3,44,1.0,-1.0,1,False
+SP110,0,,,-1,
+BATF,40,1.0,-1.0,-1,True
+SETBP1,32,-1.0,1.0,-1,False
+IRF3,42,1.0,-1.0,-1,True
+RUNX3,41,-1.0,1.0,1,True
+KLF12,33,-1.0,1.0,-1,False

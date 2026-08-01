@@ -1,0 +1,11 @@
+tf,direction,n_intermediates,n_druggable,n_dir_consistent,n_edge_confirmed,signed_KD_pred
+IRF8,agonize,2,1,0,0,-1.0
+STAT4,antagonize,3,1,2,1,-1.0
+TBX21,antagonize,5,3,2,0,-1.0
+GATA3,agonize,3,3,2,0,-1.0
+SP110,antagonize,2,1,1,0,
+BATF,antagonize,3,1,1,0,-1.0
+SETBP1,antagonize,2,2,1,0,1.0
+IRF3,antagonize,4,4,0,0,-1.0
+RUNX3,agonize,5,3,3,1,1.0
+KLF12,antagonize,1,0,1,0,1.0

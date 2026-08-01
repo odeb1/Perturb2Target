@@ -1,0 +1,135 @@
+{
+ "target": "BATF",
+ "direction": "antagonize",
+ "n_reachable_signature_genes": 47,
+ "top_paths": [
+  {
+   "endpoint": "IRF4",
+   "path": [
+    "BATF",
+    "IRF4"
+   ],
+   "len": 1,
+   "mean_confidence": 0.995
+  },
+  {
+   "endpoint": "STAT3",
+   "path": [
+    "BATF",
+    "IRF4",
+    "STAT3"
+   ],
+   "len": 2,
+   "mean_confidence": 0.984
+  },
+  {
+   "endpoint": "STAT1",
+   "path": [
+    "BATF",
+    "IRF4",
+    "STAT3",
+    "STAT1"
+   ],
+   "len": 3,
+   "mean_confidence": 0.989
+  },
+  {
+   "endpoint": "IL10RA",
+   "path": [
+    "BATF",
+    "IRF4",
+    "STAT3",
+    "JAK1",
+    "IL10RA"
+   ],
+   "len": 4,
+   "mean_confidence": 0.992
+  }
+ ],
+ "intermediate_nodes": [
+  {
+   "gene": "JAK1",
+   "observed": false,
+   "peak_signed_score": null,
+   "direction": null,
+   "peak_emp_fdr": null,
+   "direction_consistent": null,
+   "fdr_significant": null,
+   "edge_zscore_under_target_KD": null,
+   "edge_functionally_confirmed": null,
+   "druggable": {
+    "max_phase": 4,
+    "action": "INHIBITOR"
+   }
+  },
+  {
+   "gene": "STAT3",
+   "observed": true,
+   "peak_signed_score": -0.9183144569396973,
+   "direction": "driver_antagonize",
+   "peak_emp_fdr": 0.0024419274440240775,
+   "direction_consistent": true,
+   "fdr_significant": true,
+   "edge_zscore_under_target_KD": -0.03,
+   "edge_functionally_confirmed": false,
+   "druggable": null
+  },
+  {
+   "gene": "IRF4",
+   "observed": true,
+   "peak_signed_score": 0.6556147336959839,
+   "direction": "brake_agonize",
+   "peak_emp_fdr": 0.05056286909905782,
+   "direction_consistent": false,
+   "fdr_significant": false,
+   "edge_zscore_under_target_KD": 1.38,
+   "edge_functionally_confirmed": false,
+   "druggable": null
+  }
+ ],
+ "mechanism_backbone": "TARGET BATF (antagonize) \u2192 CD4 pro-inflammatory program\nDeterministic backbone (STRING confidence-weighted shortest paths):\n  [0.99] BATF \u2192 IRF4\n  [0.98] BATF \u2192 IRF4 \u2192 STAT3\n  [0.99] BATF \u2192 IRF4 \u2192 STAT3 \u2192 STAT1\n  [0.99] BATF \u2192 IRF4 \u2192 STAT3 \u2192 JAK1 \u2192 IL10RA\nDruggable / observed intermediate nodes:\n  \u00b7 JAK1 (drug phase 4)\n  \u00b7 STAT3 (KD program -0.92)\n  \u00b7 IRF4 (KD program +0.66)",
+ "method": "deterministic shortest-path over STRING (confidence-weighted)",
+ "signed_paths": [
+  {
+   "endpoint": "IL21",
+   "path": [
+    "BATF",
+    "IL21"
+   ],
+   "len": 1,
+   "net_sign": 1
+  },
+  {
+   "endpoint": "IRF4",
+   "path": [
+    "BATF",
+    "IRF4"
+   ],
+   "len": 1,
+   "net_sign": 1
+  },
+  {
+   "endpoint": "STAT3",
+   "path": [
+    "BATF",
+    "STAT3"
+   ],
+   "len": 1,
+   "net_sign": 1
+  },
+  {
+   "endpoint": "IL10",
+   "path": [
+    "BATF",
+    "IL10"
+   ],
+   "len": 1,
+   "net_sign": 1
+  }
+ ],
+ "signed_direction_prediction": {
+  "activation_effect_on_program": 1,
+  "knockdown_effect_on_program": -1,
+  "n_signature_genes_reached": 40
+ }
+}

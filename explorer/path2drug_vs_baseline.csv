@@ -1,0 +1,11 @@
+tf,direction,cell2network_node,on_pathway,c2n_node_kd_effect,baseline_hub_node
+IRF8,agonize,JAK2,True,-0.42,CD4
+STAT4,antagonize,JAK2,True,-0.42,CD4
+TBX21,antagonize,HDAC1,True,-0.44,CD4
+GATA3,agonize,SRC,True,0.45,CD4
+SP110,antagonize,JAK1,True,,
+BATF,antagonize,JAK1,True,,CD4
+SETBP1,antagonize,JAK2,True,-0.42,JAK2
+IRF3,antagonize,IFNAR1,True,0.21,CD4
+RUNX3,agonize,SRC,True,0.45,CD4
+KLF12,antagonize,,False,,
