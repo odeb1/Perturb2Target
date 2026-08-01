@@ -123,24 +123,56 @@ def for_display(frame, cols=None):
         d["direction"] = d["direction"].map(lambda v: DIRECTION_LABEL.get(v, v))
     return d.rename(columns={c: pretty_col(c) for c in d.columns})
 
+# ---------------------------------------------------------------------------
+# Cached readers.
+#
+# `@st.cache_data` on a loader that returns None when its file is missing will
+# REMEMBER that None. If the app is running when a data file is added, the tab
+# keeps reporting "not found" until the server restarts -- the file is there, the
+# cache is stale. So existence is checked UNCACHED on every call, and only the
+# actual read is cached, keyed on (path, mtime) so replacing a file also busts it.
+# ---------------------------------------------------------------------------
+@st.cache_data(show_spinner=False)
+def _read_csv_cached(fp, _mtime):
+    return pd.read_csv(fp)
+
+
+@st.cache_data(show_spinner=False)
+def _read_parquet_cached(fp, _mtime):
+    return pd.read_parquet(fp)
+
+
+@st.cache_data(show_spinner=False)
+def _read_json_cached(fp, _mtime):
+    with open(fp) as fh:
+        return json.load(fh)
+
+
+def _read_if_present(fp, kind="csv"):
+    """Read a data file, or return None if it isn't there. Never caches the None."""
+    if not os.path.exists(fp):
+        return None
+    mt = os.path.getmtime(fp)
+    if kind == "csv":
+        return _read_csv_cached(fp, mt)
+    if kind == "parquet":
+        return _read_parquet_cached(fp, mt)
+    return _read_json_cached(fp, mt)
+
+
 @st.cache_data
 def load_shortlist():
     df = pd.read_csv(CSV)
     return df
 
-@st.cache_data
 def load_signature_response():
     """Per-signature-gene z-scores per nomination per condition (49 demo genes × 48 sig × 3)."""
-    fp = os.path.join(HERE, "signature_response.parquet")
-    return pd.read_parquet(fp) if os.path.exists(fp) else None
+    return _read_if_present(os.path.join(HERE, "signature_response.parquet"), "parquet")
 
-@st.cache_data
 def load_map_by_condition():
     """Per-condition directional scores for the whole shortlist (for the condition slider)."""
-    fp = os.path.join(HERE, "map_by_condition.parquet")
-    return pd.read_parquet(fp) if os.path.exists(fp) else None
+    return _read_if_present(os.path.join(HERE, "map_by_condition.parquet"), "parquet")
 
-@st.cache_data
 def load_agentic_calls():
     """Per-gene calls from the agentic reasoning layer (92 of the 1,923 shortlist genes).
 
@@ -149,10 +181,8 @@ def load_agentic_calls():
     with the screen's directional call, and -- where it disagreed -- an explicit
     primary_inconsistency. Coverage is deliberately partial: only 92 genes were triaged.
     """
-    fp = os.path.join(HERE, "agentic_triage_calls.csv")
-    return pd.read_csv(fp) if os.path.exists(fp) else None
+    return _read_if_present(os.path.join(HERE, "agentic_triage_calls.csv"))
 
-@st.cache_data
 def load_ms_projection():
     """KD x context effects placed on the patient CD4 manifold (7,874 rows).
 
@@ -160,10 +190,8 @@ def load_ms_projection():
     transcriptional effect lands in the integrated patient UMAP, with the MS reversal
     score attached. Produced by the MS generalization analysis.
     """
-    fp = os.path.join(HERE, "ms_projection_app.parquet")
-    return pd.read_parquet(fp) if os.path.exists(fp) else None
+    return _read_if_present(os.path.join(HERE, "ms_projection_app.parquet"), "parquet")
 
-@st.cache_data
 def load_ms_background():
     """Downsampled patient-cell UMAP coordinates -- the grey cloud behind the overlay.
 
@@ -171,23 +199,16 @@ def load_ms_background():
     cloud only conveys the manifold's shape, and a browser scatter of 188k points is
     slow to no benefit.
     """
-    fp = os.path.join(HERE, "ms_manifold_background.parquet")
-    return pd.read_parquet(fp) if os.path.exists(fp) else None
+    return _read_if_present(os.path.join(HERE, "ms_manifold_background.parquet"), "parquet")
 
-@st.cache_data
 def load_ms_nominations():
-    fp = os.path.join(HERE, "ms_nominations_shortlist.csv")
-    return pd.read_csv(fp) if os.path.exists(fp) else None
+    return _read_if_present(os.path.join(HERE, "ms_nominations_shortlist.csv"))
 
-@st.cache_data
 def load_ms_concordance():
-    fp = os.path.join(HERE, "ms_drug_concordance.csv")
-    return pd.read_csv(fp) if os.path.exists(fp) else None
+    return _read_if_present(os.path.join(HERE, "ms_drug_concordance.csv"))
 
-@st.cache_data
 def load_ms_summary():
-    fp = os.path.join(HERE, "ms_generalization_summary.json")
-    return json.load(open(fp)) if os.path.exists(fp) else None
+    return _read_if_present(os.path.join(HERE, "ms_generalization_summary.json"), "json")
 
 LIGAND_DIR = os.path.join(HERE, "structures_ligand")
 def ligand_genes():
@@ -304,15 +325,17 @@ def ligand_structure_html(gene, height=440, spin=True, staged=True, reveal_ms=90
     return html
 
 # ------------------------------------------------------------------ filter engine
-@st.cache_data
 def load_ms_anchored():
     """Genes carrying MS evidence from the patient-signature analysis (not Open Targets).
-    These are a separate line of evidence: the two sources do not overlap."""
-    try:
-        m = pd.read_csv(os.path.join(HERE, "ms_nominations_shortlist.csv"))
-        return set(m.loc[m.ms_nomination == True, "sym"])  # noqa: E712
-    except Exception:
+    These are a separate line of evidence: the two sources do not overlap.
+
+    Uncached guard for the same reason as the other loaders: caching an empty set when
+    the file is absent would survive the file being added.
+    """
+    m = _read_if_present(os.path.join(HERE, "ms_nominations_shortlist.csv"))
+    if m is None or "ms_nomination" not in m.columns:
         return set()
+    return set(m.loc[m.ms_nomination == True, "sym"])  # noqa: E712
 
 
 MS_ANCHORED_GENES = load_ms_anchored()
@@ -1124,40 +1147,32 @@ def multibaseline_fig(mb):
         yaxis=dict(tickfont=dict(size=11)))
     return fig
 
-@st.cache_data
 def load_p2d_summary():
     """Per-TF backbone summary: intermediates found, how many druggable / consistent."""
-    fp = os.path.join(HERE, "path2drug_enriched_summary.csv")
-    return pd.read_csv(fp) if os.path.exists(fp) else None
+    return _read_if_present(os.path.join(HERE, "path2drug_enriched_summary.csv"))
 
 
-@st.cache_data
 def load_p2d_baseline():
     """Path2Drug's chosen node vs the naive highest-degree-druggable-neighbour heuristic."""
-    fp = os.path.join(HERE, "path2drug_vs_baseline.csv")
-    return pd.read_csv(fp) if os.path.exists(fp) else None
+    return _read_if_present(os.path.join(HERE, "path2drug_vs_baseline.csv"))
 
 
-@st.cache_data
 def load_p2d_edges():
     """Functional test of each target->intermediate edge against the atlas itself."""
-    fp = os.path.join(HERE, "path2drug_edge_confirmation.csv")
-    return pd.read_csv(fp) if os.path.exists(fp) else None
+    return _read_if_present(os.path.join(HERE, "path2drug_edge_confirmation.csv"))
 
 
-@st.cache_data
 def load_p2d_target(tf):
     """Full deterministic backbone for one TF: paths, intermediates, druggability."""
-    fp = os.path.join(HERE, "path2drug", f"p2d_{tf}.json")
-    if not os.path.exists(fp):
-        return None
-    with open(fp) as fh:
-        return json.load(fh)
+    return _read_if_present(os.path.join(HERE, "path2drug", f"p2d_{tf}.json"), "json")
 
 
-@st.cache_data
 def p2d_available():
-    """TFs with a released backbone, in the summary's own order (best-supported first)."""
+    """TFs with a released backbone, in the summary's own order (best-supported first).
+
+    Deliberately uncached: this is a directory listing, and caching an empty result
+    would keep the tab reporting "not found" after the data is copied in.
+    """
     d = os.path.join(HERE, "path2drug")
     if not os.path.isdir(d):
         return []
@@ -1169,20 +1184,13 @@ def p2d_available():
     return got
 
 
-@st.cache_data
 def load_multibaseline():
     """AUROC/AP for our scores vs three external baselines (6 rows)."""
-    fp = os.path.join(HERE, "multibaseline_comparison_results.csv")
-    return pd.read_csv(fp) if os.path.exists(fp) else None
+    return _read_if_present(os.path.join(HERE, "multibaseline_comparison_results.csv"))
 
-@st.cache_data
 def load_weight_sensitivity():
     """Summary of the +/-40% weight-perturbation robustness analysis."""
-    fp = os.path.join(HERE, "weight_sensitivity_summary.json")
-    if not os.path.exists(fp):
-        return None
-    with open(fp) as fh:
-        return json.load(fh)
+    return _read_if_present(os.path.join(HERE, "weight_sensitivity_summary.json"), "json")
 
 def weight_reranking_fig(dfp, w_causal, w_gen, w_drug, w_nov, top_n=15):
     """Live re-ranking under user-chosen integration weights.
