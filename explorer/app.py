@@ -909,6 +909,174 @@ def score_buildup(row):
                                                      "mode": "immediate"}])])])
     return fig
 
+def p2d_backbone_fig(d):
+    """Deterministic path backbone for one TF, laid out by hop distance.
+
+    Left-to-right: the TF, then intermediate nodes at their hop position, then the
+    signature-gene endpoints. Node colour marks role (target / druggable intermediate /
+    other intermediate / endpoint), NOT direction -- these are pathway positions, not
+    therapeutic calls, so the direction palette would misread here.
+    """
+    import plotly.graph_objects as go
+    paths = d.get("top_paths", [])
+    if not paths:
+        return None
+    inter = {n["gene"]: n for n in d.get("intermediate_nodes", [])}
+    tf = d["target"]
+
+    # hop index for every gene across all paths (earliest position wins)
+    hop, endpoints = {}, set()
+    for p in paths:
+        seq = p["path"]
+        endpoints.add(seq[-1])
+        for k, g in enumerate(seq):
+            hop[g] = min(hop.get(g, 99), k)
+    hop[tf] = 0
+    maxhop = max(hop.values())
+
+    # vertical slot per column, ordered so edges cross as little as possible
+    bycol = {}
+    for g, h in hop.items():
+        bycol.setdefault(h, []).append(g)
+    pos = {}
+    for h, genes in bycol.items():
+        genes = sorted(genes)
+        n = len(genes)
+        for k, g in enumerate(genes):
+            pos[g] = (h, (n - 1) / 2 - k)
+
+    fig = go.Figure()
+    seen = set()
+    for p in paths:
+        seq = p["path"]
+        for a, b in zip(seq[:-1], seq[1:]):
+            if (a, b) in seen:
+                continue
+            seen.add((a, b))
+            x0, y0 = pos[a]; x1, y1 = pos[b]
+            fig.add_trace(go.Scatter(
+                x=[x0, x1], y=[y0, y1], mode="lines", hoverinfo="skip",
+                line=dict(color="#c9d4e0", width=1.6), showlegend=False))
+
+    groups = {"target": ([], [], [], C_OXFORD, 30),
+              "druggable": ([], [], [], "#b08d57", 24),
+              "intermediate": ([], [], [], "#7f9cba", 19),
+              "signature gene": ([], [], [], "#2b8fb0", 16)}
+    for g, (x, y) in pos.items():
+        if g == tf:
+            key, txt = "target", f"<b>{g}</b><br>target TF ({d.get('direction','')})"
+        elif g in inter:
+            n = inter[g]
+            dr = n.get("druggable") or {}
+            key = "druggable" if dr else "intermediate"
+            bits = [f"<b>{g}</b>", "intermediate node"]
+            if dr:
+                bits.append(f"ChEMBL max phase {dr.get('max_phase','?')} &middot; {dr.get('action','?')}")
+            if n.get("observed"):
+                bits.append(f"own program effect {n.get('peak_signed_score', float('nan')):+.2f}")
+                bits.append("direction-consistent" if n.get("direction_consistent")
+                            else "direction-INconsistent")
+            ez = n.get("edge_zscore_under_target_KD")
+            if ez is not None:
+                bits.append(f"edge z under {tf} KD = {ez:+.2f}"
+                            + ("  (confirmed)" if n.get("edge_functionally_confirmed") else ""))
+            txt = "<br>".join(bits)
+        elif g in endpoints:
+            key, txt = "signature gene", f"<b>{g}</b><br>program signature gene"
+        else:
+            key, txt = "intermediate", f"<b>{g}</b>"
+        groups[key][0].append(x); groups[key][1].append(y); groups[key][2].append(txt)
+
+    for key, (xs, ys, txts, col, size) in groups.items():
+        if not xs:
+            continue
+        fig.add_trace(go.Scatter(
+            x=xs, y=ys, mode="markers", name=key,
+            marker=dict(size=size, color=col, line=dict(color="white", width=1.6)),
+            text=txts, hovertemplate="%{text}<extra></extra>"))
+    for g, (x, y) in pos.items():
+        fig.add_annotation(x=x, y=y, text=f"<b>{g}</b>", showarrow=False,
+                           yshift=-20, font=dict(size=10.5, color=C_INK))
+
+    fig.update_layout(
+        height=380, margin=dict(l=10, r=10, t=54, b=34),
+        paper_bgcolor=C_PANEL, plot_bgcolor=C_PANEL,
+        title=dict(text=(f"Mechanistic backbone: {tf} to the program signature"
+                         f"<br><sup>{d.get('n_reachable_signature_genes','?')} signature genes "
+                         f"reachable &middot; gold = druggable intermediate &middot; "
+                         f"hover any node</sup>"),
+                   font=dict(size=14, color=C_OXFORD), x=0.01),
+        legend=dict(orientation="h", y=1.10, x=0.34, font=dict(size=10.5)),
+        xaxis=dict(visible=False, range=[-0.45, maxhop + 0.45]),
+        yaxis=dict(visible=False))
+    return fig
+
+
+def p2d_baseline_fig(bl):
+    """Path2Drug's node choice vs the naive highest-degree heuristic, per TF."""
+    import plotly.graph_objects as go
+    d = bl.dropna(subset=["cell2network_node"]).copy()
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=[0] * len(d), y=d.tf, mode="markers+text",
+        marker=dict(size=15, color="#9fb3c8", line=dict(color="white", width=1.4)),
+        text=d.baseline_hub_node.fillna("(none)"), textposition="middle left",
+        textfont=dict(size=10.5, color=C_MUTED),
+        name="naive highest-degree neighbour",
+        hovertemplate="%{y}: baseline picks %{text}<extra></extra>"))
+    fig.add_trace(go.Scatter(
+        x=[1] * len(d), y=d.tf, mode="markers+text",
+        marker=dict(size=15, color=C_BRASS, line=dict(color="white", width=1.4)),
+        text=d.cell2network_node, textposition="middle right",
+        textfont=dict(size=10.5, color=C_OXFORD),
+        name="Path2Drug", hovertemplate="%{y}: Path2Drug picks %{text}<extra></extra>"))
+    for r in d.itertuples():
+        fig.add_shape(type="line", x0=0, x1=1, y0=r.tf, y1=r.tf,
+                      line=dict(color="#e3e9f0", width=1.2), layer="below")
+    nb = d.baseline_hub_node.nunique(dropna=True)
+    np_ = d.cell2network_node.nunique(dropna=True)
+    fig.update_layout(
+        height=340, margin=dict(l=10, r=10, t=62, b=30),
+        paper_bgcolor=C_PANEL, plot_bgcolor=C_PANEL,
+        title=dict(text=("Pathway-aware vs naive node choice"
+                         f"<br><sup>the degree heuristic collapses to {nb} distinct node(s); "
+                         f"Path2Drug returns {np_}</sup>"),
+                   font=dict(size=14, color=C_OXFORD), x=0.01),
+        legend=dict(orientation="h", y=1.13, x=0.30, font=dict(size=10.5)),
+        xaxis=dict(visible=False, range=[-0.62, 1.62]),
+        yaxis=dict(autorange="reversed", tickfont=dict(size=11, color=C_INK),
+                   showgrid=False, zeroline=False))
+    return fig
+
+
+def p2d_edge_fig(ec):
+    """Functional edge test: does knocking the TF down move the intermediate's transcript?"""
+    import plotly.graph_objects as go
+    d = ec.dropna(subset=["edge_zscore"]).copy()
+    d = d.reindex(d.edge_zscore.abs().sort_values().index)
+    lab = d.tf + " \u2192 " + d.intermediate
+    # `edge_confirmed` is an object column holding Python bools plus NaN for untestable
+    # edges. `.astype(bool)` would make every NaN truthy and quadruple the count, so
+    # compare to True explicitly.
+    conf = d.edge_confirmed == True  # noqa: E712
+    fig = go.Figure(go.Bar(
+        x=d.edge_zscore, y=lab, orientation="h",
+        marker=dict(color=["#2e7d32" if c else "#9fb3c8" for c in conf]),
+        hovertemplate="%{y}<br>edge z = %{x:.2f}<extra></extra>"))
+    for v in (-1.96, 1.96):
+        fig.add_vline(x=v, line=dict(color="#8b9aa8", width=1, dash="dot"))
+    fig.update_layout(
+        height=max(320, 17 * len(d)), margin=dict(l=10, r=20, t=62, b=40),
+        paper_bgcolor=C_PANEL, plot_bgcolor=C_PANEL,
+        title=dict(text=(f"Functional edge confirmation &mdash; {int(conf.sum())} of {len(d)} testable edges pass"
+                         "<br><sup>z-score of the intermediate's transcript under its target's "
+                         "knockdown; dotted lines |z| = 1.96</sup>"),
+                   font=dict(size=14, color=C_OXFORD), x=0.01),
+        xaxis=dict(title="edge z-score", gridcolor=C_LINE, zerolinecolor="#8b9aa8"),
+        yaxis=dict(tickfont=dict(size=9.5, color=C_INK)), showlegend=False)
+    return fig
+
+
 def multibaseline_fig(mb):
     """Our scores against three external baselines, with bootstrap CIs.
 
@@ -955,6 +1123,51 @@ def multibaseline_fig(mb):
                    gridcolor="#e3e8ef"),
         yaxis=dict(tickfont=dict(size=11)))
     return fig
+
+@st.cache_data
+def load_p2d_summary():
+    """Per-TF backbone summary: intermediates found, how many druggable / consistent."""
+    fp = os.path.join(HERE, "path2drug_enriched_summary.csv")
+    return pd.read_csv(fp) if os.path.exists(fp) else None
+
+
+@st.cache_data
+def load_p2d_baseline():
+    """Path2Drug's chosen node vs the naive highest-degree-druggable-neighbour heuristic."""
+    fp = os.path.join(HERE, "path2drug_vs_baseline.csv")
+    return pd.read_csv(fp) if os.path.exists(fp) else None
+
+
+@st.cache_data
+def load_p2d_edges():
+    """Functional test of each target->intermediate edge against the atlas itself."""
+    fp = os.path.join(HERE, "path2drug_edge_confirmation.csv")
+    return pd.read_csv(fp) if os.path.exists(fp) else None
+
+
+@st.cache_data
+def load_p2d_target(tf):
+    """Full deterministic backbone for one TF: paths, intermediates, druggability."""
+    fp = os.path.join(HERE, "path2drug", f"p2d_{tf}.json")
+    if not os.path.exists(fp):
+        return None
+    with open(fp) as fh:
+        return json.load(fh)
+
+
+@st.cache_data
+def p2d_available():
+    """TFs with a released backbone, in the summary's own order (best-supported first)."""
+    d = os.path.join(HERE, "path2drug")
+    if not os.path.isdir(d):
+        return []
+    got = sorted(f[4:-5] for f in os.listdir(d) if f.startswith("p2d_") and f.endswith(".json"))
+    s = load_p2d_summary()
+    if s is not None:
+        order = [t for t in s.tf.tolist() if t in got]
+        return order + [t for t in got if t not in order]
+    return got
+
 
 @st.cache_data
 def load_multibaseline():
@@ -1637,10 +1850,10 @@ st.markdown("")
 # ------- hero: tabbed views (static map / animated context / landscape sunburst) -------
 mapd = load_map_by_condition()
 (tab_map, tab_ctx, tab_funnel, tab_land, tab_ms, tab_overlay,
- tab_weights, tab_bench) = st.tabs(
+ tab_p2d, tab_weights, tab_bench) = st.tabs(
     ["🗺 Directional map", "⏱ Context dynamics", "🔻 Method funnel", "🌅 Landscape",
-     "🧭 MS generalization", "🧬 Patient manifold", "⚖️ Re-weight the score",
-     "📊 Benchmark"])
+     "🧭 MS generalization", "🧬 Patient manifold", "🕸 Path2Drug",
+     "⚖️ Re-weight the score", "📊 Benchmark"])
 with tab_map:
     left, right = st.columns([1.15, 1])
     with left:
@@ -1928,6 +2141,98 @@ with tab_overlay:
             "confound correlation from −0.33 to −0.07, and the directional result quoted in the "
             "paper uses the corrected score, not the raw one shown here."
         )
+
+with tab_p2d:
+    _p2d_tfs = p2d_available()
+    _p2d_sum = load_p2d_summary()
+    if not _p2d_tfs or _p2d_sum is None:
+        st.info("Path2Drug outputs not found. Copy `path2drug/` and the "
+                "`path2drug_*.csv` tables into the app folder.")
+    else:
+        st.markdown(
+            "**Thirteen of the top-100 nominations are transcription factors with no "
+            "small-molecule pocket.** A directional call on an undruggable gene is not yet "
+            "actionable. `Path2Drug` walks confidence-weighted STRING paths from the TF to "
+            "the program's signature genes and asks which node *on that path* is druggable "
+            "— turning an undruggable nomination into a tractable intervention point. "
+            "Ten of those thirteen have a released backbone below; ANKZF1, ZNF236 and "
+            "ZNF438 have too little STRING support to path from.")
+        _c1, _c2 = st.columns([1, 1.6])
+        with _c1:
+            _tf = st.selectbox("Transcription factor", _p2d_tfs,
+                               index=_p2d_tfs.index("STAT4") if "STAT4" in _p2d_tfs else 0)
+        _row = _p2d_sum[_p2d_sum.tf == _tf]
+        with _c2:
+            if len(_row):
+                _r = _row.iloc[0]
+                st.markdown(
+                    f"<div style='padding-top:26px'>"
+                    f"<span class='pill' style='background:{C_OXFORD}'>{_r.direction}</span> "
+                    f"&nbsp;{int(_r.n_intermediates)} intermediates &middot; "
+                    f"<b>{int(_r.n_druggable)} druggable</b> &middot; "
+                    f"{int(_r.n_dir_consistent)} direction-consistent &middot; "
+                    f"{int(_r.n_edge_confirmed)} edge-confirmed</div>",
+                    unsafe_allow_html=True)
+        _d = load_p2d_target(_tf)
+        if _d is None:
+            st.info(f"No released backbone for {_tf}.")
+        else:
+            _fig = p2d_backbone_fig(_d)
+            if _fig is not None:
+                st.plotly_chart(_fig, width="stretch", config={"displayModeBar": False})
+            _drug = [n for n in _d.get("intermediate_nodes", []) if n.get("druggable")]
+            if _drug:
+                _bits = []
+                for n in _drug:
+                    _dr = n["druggable"]
+                    _eff = n.get("peak_signed_score")
+                    _bits.append(
+                        f"**{n['gene']}** (ChEMBL phase {_dr.get('max_phase','?')}, "
+                        f"{str(_dr.get('action','?')).lower()})"
+                        + (f", own program effect {_eff:+.2f}"
+                           f"{', direction-consistent' if n.get('direction_consistent') else ''}"
+                           if _eff is not None else ""))
+                st.markdown("**Druggable intermediates on this backbone:** " + "; ".join(_bits) + ".")
+            else:
+                st.caption(f"No druggable intermediate on {_tf}'s backbone — "
+                           "one of the ten TFs where the method returns nothing actionable.")
+        st.markdown("---")
+        _cA, _cB = st.columns(2)
+        with _cA:
+            _bl = load_p2d_baseline()
+            if _bl is not None:
+                st.plotly_chart(p2d_baseline_fig(_bl), width="stretch",
+                                config={"displayModeBar": False})
+                st.caption(
+                    "The control that makes this a result rather than a diagram: a naive "
+                    "highest-degree-druggable-neighbour heuristic collapses to the generic "
+                    "hub CD4 for almost every TF. Path2Drug returns pathway-specific nodes. "
+                    "Of the seven selected nodes with an observed program effect, 5 (71%) "
+                    "move the program in the direction the TF's own call implies.")
+        with _cB:
+            _ec = load_p2d_edges()
+            if _ec is not None:
+                st.plotly_chart(p2d_edge_fig(_ec), width="stretch",
+                                config={"displayModeBar": False})
+                st.caption(
+                    "STRING edges are literature co-occurrence, so each target→intermediate "
+                    "edge is re-tested against the atlas: does knocking the TF down actually "
+                    "move the intermediate's transcript? Of the 30 edges, 24 are testable "
+                    "(both genes measured) and only 2 clear |z|≥1.96. The "
+                    "backbone is a hypothesis generator, not a validated circuit.")
+        st.markdown("---")
+        st.markdown("**Where this sits in the argument.** The flagship case is "
+                    "STAT4 → IL12RB2 → **JAK2** → IFNG: JAK2 has approved inhibitors, and its "
+                    "own knockdown lowers the program (−0.42). That recovers — rather than "
+                    "assumes — the established logic of treating STAT-driven inflammation "
+                    "with JAK inhibitors, which is the point of the control: a method that "
+                    "re-derives known pharmacology from perturbation data alone is one you "
+                    "can trust a little further on the cases where no drug exists yet.")
+        st.caption("Scope: the 10 hard-to-drug TFs above, none of which is among the six "
+                   "deep-dive leads — this is a separate, complementary output. Any "
+                   "language-model narration in the pipeline is constrained to the extracted "
+                   "subnetwork and cannot introduce genes or edges; the deterministic "
+                   "backbone, not the prose, is the deliverable.")
 
 with tab_weights:
     _ws = load_weight_sensitivity()
