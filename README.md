@@ -15,8 +15,7 @@ explorer, and a full write-up.
 (`GWCD4i.DE_stats.h5ad`; conditions Rest / Stim 8 h / Stim 48 h; 33,983 perturbation×condition
 profiles × 10,282 readout genes).
 
-> **These are computational hypotheses** from multi-evidence triangulation — no wet-lab
-> validation. Credibility rests on evidence convergence and on recovery of established immune
+> **These are computational hypotheses** from multi-evidence triangulation. Credibility rests on evidence convergence and on recovery of established immune
 > drug targets (IL4R, IL2RA, STAT3, IL6R) at the top of the ranking as positive controls.
 
 ---
