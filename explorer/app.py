@@ -1665,7 +1665,7 @@ st.markdown("""
 <div class="hero">
   <p class="eyebrow">Directional target nomination &middot; CD4&#8314; T-cell Perturb-seq</p>
   <h1>Perturb2Target</h1>
-  <p class="byline">Oishi Deb &nbsp;&middot;&nbsp; Yizhou Yu</p>
+  <p class="byline">Oishi Deb &nbsp;&middot</p>
   <div class="rule"></div>
   <p><b>1,923 directional nominations</b> from a genome-scale CRISPRi screen &mdash; each one a
   call to <b>block a driver</b> or <b>activate a brake</b>, anchored in human genetics and
