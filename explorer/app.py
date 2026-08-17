@@ -517,6 +517,7 @@ def apply_filters(df, spec):
     # AND-ing them would always return an empty table -- which is what a plain-language
     # query like "which MS targets should I block?" produces, since it legitimately sets
     # both flags. Both mean "carries MS evidence", so they are OR-ed.
+    
     _dgroups = spec.get("disease_groups")
     if _dgroups and not isinstance(_dgroups, list):
         _dgroups = [_dgroups]
@@ -937,7 +938,7 @@ def p2d_backbone_fig(d):
 
     Left-to-right: the TF, then intermediate nodes at their hop position, then the
     signature-gene endpoints. Node colour marks role (target / druggable intermediate /
-    other intermediate / endpoint), NOT direction -- these are pathway positions, not
+    other intermediate / endpoint), NOT direction these are pathway positions, not
     therapeutic calls, so the direction palette would misread here.
     """
     import plotly.graph_objects as go
@@ -1491,7 +1492,7 @@ st.set_page_config(page_title="Perturb2Target Explorer", layout="wide", page_ico
 # NOTE ON THE STYLE BLOCK BELOW: it must contain NO blank lines. Streamlit renders
 # markdown, and in markdown a blank line terminates a raw-HTML block -- everything after
 # the first blank line inside <style> gets emitted as visible text instead of being applied.
-# Use the /* ---------- */ comments as section separators, never an empty line.
+# Use the /* ---------- */ comments as section separators, not an empty line.  
 st.markdown(f"""
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
@@ -1664,12 +1665,12 @@ def section(num, title, sub=""):
 st.markdown("""
 <div class="hero">
   <p class="eyebrow">Directional target nomination &middot; CD4&#8314; T-cell Perturb-seq</p>
-  <h1>Perturb2Target</h1>
-  <p class="byline">Oishi Deb &nbsp;&middot</p>
+  <h1>GenePerturb2Target</h1>
+  <p class="byline">Oishi Deb &nbsp;&middot; Yizhou Yu</p>
   <div class="rule"></div>
-  <p><b>1,923 directional nominations</b> from a genome-scale CRISPRi screen &mdash; each one a
+  <p><b>1,923 Directional Nominations </b> from a genome-scale CRISPRi screen &mdash; each one a
   call to <b>block a driver</b> or <b>activate a brake</b>, anchored in human genetics and
-  filtered for druggability. Every figure and filter is computed on the real data; the
+  filtered for druggability. Every figure and filter is computed on real dataset the
   language model only translates your words into filters and narrates a gene's own
   evidence.</p>
 </div>
@@ -1749,7 +1750,7 @@ if client is None:
             "Get a key from console.anthropic.com → API keys."
         )
 # Worked examples. Each was run through the parser and the filter, and the count
-# shown is the number of targets it actually returns -- including the honest zero.
+# shown is the number of targets it actually returns -- including the zero.
 EXAMPLE_QUERIES = [
     ("Novel undrugged targets for type 1 diabetes", "4 targets"),
     ("Which multiple sclerosis targets should I block?", "7 targets"),
@@ -1817,7 +1818,7 @@ if nlq and client is not None:
         else:
             st.error(f"Parse failed ({e}); using sidebar filters.")
 
-# results
+# results results 
 res = apply_filters(df, spec)
 
 # Disease filters are informative only where an anchor exists, so say so explicitly
@@ -1842,7 +1843,7 @@ if spec.get("disease_groups") or spec.get("disease_contains") or spec.get("ms_an
 
 section("II", "The shortlist", "filtered nominations and how they distribute")
 
-# KPI cards
+# KPI cards KPI CARDS
 n = len(res)
 n_novel = int((res.novelty_class == "novel_undrugged").sum())
 n_strong = int((res.genetics_tier == "strong").sum())
@@ -1946,7 +1947,7 @@ if n:
                     components.html(structure_html(pdb, "confidence"), height=440)
                     st.caption(f"{src} · red→blue = low→high model confidence (pLDDT)")
                 else:
-                    st.warning(f"No structure available for {gene}.")
+                    st.warning(f"Structure not available for {gene}.")
         else:
             st.info("3D viewer hidden — tick 'Show 3D structure' to display it.")
     with cC:
@@ -2121,7 +2122,7 @@ with tab_overlay:
     _proj = load_ms_projection()
     _bg = load_ms_background()
     if _proj is None:
-        st.info("Projection data (ms_projection_app.parquet) not found next to app.py.")
+        st.info("Projection data (ms_projection_app.parquet) not found next to app.py app.py.")
     else:
         _c1, _c2 = st.columns([1, 3])
         with _c1:
@@ -2215,7 +2216,7 @@ with tab_p2d:
                     "The control that makes this a result rather than a diagram: a naive "
                     "highest-degree-druggable-neighbour heuristic collapses to the generic "
                     "hub CD4 for almost every TF. Path2Drug returns pathway-specific nodes. "
-                    "Of the seven selected nodes with an observed program effect, 5 (71%) "
+                    "Of the seven selected nodes with an observed program effect, 5 (71%)"
                     "move the program in the direction the TF's own call implies.")
         with _cB:
             _ec = load_p2d_edges()
@@ -2298,7 +2299,7 @@ with tab_bench:
             "shows the benchmarks it wins is not evidence of anything."
         )
         st.info(
-            "**Why we still think the method earns its place.** Recovering already-known "
+            "**Why the method earns its place.** Recovering already-known "
             "targets is a test of how well a score reproduces existing knowledge — and a "
             "centrality measure trained on the literature's own citation structure should "
             "win it. It says nothing about *direction*: none of these baselines states "
